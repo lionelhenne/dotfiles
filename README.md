@@ -1,5 +1,5 @@
 # About
-Personal dotfiles management repository. This repository contains my personal configuration files for various tools and environments.
+This repository contains my personal configuration files for various tools and environments, managed as dotfiles.
 
 # Environment
 ## System
@@ -7,10 +7,10 @@ Personal dotfiles management repository. This repository contains my personal co
 - **Shell**: [zsh](http://www.zsh.org/)
 
 ## Affected Tools
-- **Terminal Emulator**: [Ghostty](https://ghostty.org/)
-- **Code Editor**: [VSCode](https://code.visualstudio.com/)
+- **Terminal Emulator**: [Ghostty](https://ghostty.org/) with the [Catppuccin Macchiato](https://github.com/catppuccin/ghostty) theme
+- **Code Editor**: [VSCode](https://code.visualstudio.com/) with the [Catppuccin Macchiato](https://github.com/catppuccin/vscode) theme
 
 ## Affected Homebrew Formulae
-- **Prompt Customization**: [starship](https://starship.rs/)
-- **File Lister**: [eza](https://eza.rocks/)
-- **System Information**: [neofetch](https://github.com/dylanaraps/neofetch)
+- **Prompt Customization**: [Starship](https://starship.rs/) with a customized [Pastel Powerline Theme](https://starship.rs/presets/pastel-powerline)
+- **File Lister**: [eza](https://eza.rocks/) with the [OneDark](https://github.com/eza-community/eza-themes/blob/main/themes/one_dark.yml) theme
+- **System Information**: [Neofetch](https://github.com/dylanaraps/neofetch)
