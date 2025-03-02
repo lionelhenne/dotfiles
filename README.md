@@ -13,4 +13,3 @@ This repository contains my personal configuration files for various tools and e
 ## Affected Homebrew Formulae
 - **Prompt Customization**: [Starship](https://starship.rs/) with a customized [Pastel Powerline Theme](https://starship.rs/presets/pastel-powerline)
 - **File Lister**: [eza](https://eza.rocks/) with the [OneDark](https://github.com/eza-community/eza-themes/blob/main/themes/one_dark.yml) theme
-- **System Information**: [Neofetch](https://github.com/dylanaraps/neofetch)
