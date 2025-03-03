@@ -5,6 +5,7 @@ This repository contains my personal configuration files for various tools and e
 ## System
 - **Operating System**: [macOS](https://www.apple.com/macos/)
 - **Shell**: [zsh](http://www.zsh.org/)
+- **Dotfiles manager**: [GNU Stow](https://www.gnu.org/software/stow/)
 
 ## Affected Tools
 - **Terminal Emulator**: [Ghostty](https://ghostty.org/) with the [Catppuccin Macchiato](https://github.com/catppuccin/ghostty) theme
