@@ -19,13 +19,16 @@ $gradle\
 $haskell\
 $java\
 $julia\
+$kotlin\
 $nodejs\
 $nim\
 $php\
+$python\
 $rust\
 $scala\
 [](fg:#86BBD8 bg:#06969A)\
 $docker_context\
+$conda\
 [](fg:#06969A bg:#33658A)\
 $time\
 [ ](fg:#33658A)\
@@ -53,6 +56,29 @@ disabled = false
 style = "bg:#9A348E"
 disabled = true # Disabled by default
 
+[os.symbols]
+Windows = "󰍲 "
+Ubuntu = "󰕈 "
+SUSE = " "
+Raspbian = "󰐿 "
+Mint = "󰣭 "
+Macos = "󰀵 "
+Manjaro = " "
+Linux = "󰌽 "
+Gentoo = "󰣨 "
+Fedora = "󰣛 "
+Alpine = " "
+Amazon = " "
+Android = " "
+Arch = "󰣇 "
+Artix = "󰣇 "
+EndeavourOS = " "
+CentOS = " "
+Debian = "󰣚 "
+Redhat = "󱄛 "
+RedHatEnterprise = "󱄛 "
+Pop = " "
+
 # ----------------------
 # OS & USERNAME
 # ----------------------
@@ -71,6 +97,7 @@ truncation_symbol = "…/"
 "Pictures" = " "
 "Sites" = "󰖟 "
 "Movies" = "󰟞 "
+"Developer" = "󰲋 "
 # Keep in mind that the order matters. For example:
 # "Important Documents" = " 󰈙 "
 # will not be replaced, because "Documents" was already substituted before.
@@ -131,8 +158,13 @@ symbol = " "
 style = "bg:#86BBD8 fg:#000000"
 format = '[ $symbol ($version) ]($style)'
 
+[kotlin]
+symbol = " "
+style = "bg:#86BBD8 fg:#000000"
+format = '[ $symbol( $version) ]($style)'
+
 [nodejs]
-symbol = ""
+symbol = " "
 style = "bg:#86BBD8 fg:#000000"
 format = '[ $symbol ($version) ]($style)'
 
@@ -146,8 +178,13 @@ symbol = " "
 style = "bg:#86BBD8 fg:#000000"
 format = '[ $symbol ($version) ]($style)'
 
+[python]
+symbol = " "
+style = "bg:#86BBD8 fg:#000000"
+format = '[ $symbol ($version) ]($style)'
+
 [rust]
-symbol = ""
+symbol = " "
 style = "bg:#86BBD8 fg:#000000"
 format = '[ $symbol ($version) ]($style)'
 
@@ -163,6 +200,13 @@ format = '[ $symbol ($version) ]($style)'
 symbol = " "
 style = "bg:#06969A"
 format = '[ $symbol $context ]($style)'
+
+# ----------------------
+# CONDA
+# ----------------------
+[conda]
+style = "bg:#06969A"
+format = '[ $symbol( $environment) ]($style)'
 
 # ----------------------
 # TIME
