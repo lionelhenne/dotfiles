@@ -31,3 +31,9 @@ done
 # eza
 # ------------------------------------------------------------
 [[ -d $HOME/.config/eza ]] && export EZA_CONFIG_DIR="$HOME/.config/eza"
+
+
+# ------------------------------------------------------------
+# Atuin
+# ------------------------------------------------------------
+[[ -d $HOME/.config/atuin ]] && export ATUIN_CONFIG_DIR="$HOME/.dotfiles/.config/atuin"
