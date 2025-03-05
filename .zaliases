@@ -24,7 +24,8 @@ alias ..="cd .."
 ezaargs="-algOB --hyperlink --group --color=always"
 alias l="eza $ezaargs"
 alias li="eza $ezaargs --icons=always --icons-space"
-alias lt="eza $ezaargs --recurse --tree --level=2 --ignore-glob='.zsh_sessions|node_modules'"
+alias lt="eza $ezaargs --recurse --tree --level=2 --ignore-glob='.zsh_sessions|node_modules|.git|.DS_Store'"
+alias lta="eza $ezaargs --recurse --tree --level=2"
 
 # ------------------------------------------------------------
 # fd
