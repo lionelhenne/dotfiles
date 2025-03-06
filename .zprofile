@@ -6,6 +6,7 @@ directories=(
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
     "$HOME/.composer/vendor/bin"
+    "$HOME/.config/composer/vendor/bin"
     "$HOME/.config/phpmon/bin"
     "/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
     "/Applications/PhpStorm.app/Contents/MacOS"
