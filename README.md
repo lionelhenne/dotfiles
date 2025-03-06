@@ -2,6 +2,8 @@
 
 Configuration files for my macOS environment, managed as dotfiles.  
 
+Part of my broader setup: [macOS Development Setup](https://github.com/lionelhenne/macossetup).  
+
 ## Environment  
 
 ### System  
