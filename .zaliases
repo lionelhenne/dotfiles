@@ -3,8 +3,8 @@
 # ------------------------------------------------------------
 alias home="clear;cd"
 alias flushcache="sudo killall -HUP mDNSResponder"
-alias pac:update="composer self-update && composer global outdated && brew update && brew outdated && npm update -g && npm outdated -g"
-alias pac:upgrade="composer global update && brew upgrade && npm update -g"
+alias update="composer self-update && composer global outdated && brew update && brew outdated && npm update -g && npm outdated -g"
+alias upgrade="composer global update && brew upgrade && npm update -g"
 
 # ------------------------------------------------------------
 # micro
