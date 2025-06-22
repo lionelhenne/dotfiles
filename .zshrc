@@ -29,7 +29,9 @@ fi
 # ------------------------------------------------------------
 # Case-insensitive autocompletion
 # ------------------------------------------------------------
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+autoload -U compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z} m:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+compinit
 
 # ------------------------------------------------------------
 # Aliases
