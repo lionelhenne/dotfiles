@@ -3,33 +3,13 @@
 # ----------------------
 format = """
 [](#9A348E)\
-$os\
 $username\
 [](fg:#9A348E bg:#DA627D)\
 $directory\
 [](fg:#DA627D bg:#FCA17D)\
 $git_branch\
 $git_status\
-[](fg:#FCA17D bg:#86BBD8)\
-$c\
-$elixir\
-$elm\
-$golang\
-$gradle\
-$haskell\
-$java\
-$julia\
-$kotlin\
-$nodejs\
-$nim\
-$php\
-$python\
-$rust\
-$scala\
-[](fg:#86BBD8 bg:#06969A)\
-$docker_context\
-$conda\
-[](fg:#06969A bg:#33658A)\
+[](fg:#FCA17D bg:#33658A)\
 $time\
 [ ](fg:#33658A)\
 $line_break$character
@@ -49,35 +29,6 @@ style_user = "bg:#9A348E"
 style_root = "bg:#9A348E"
 format = '[$user ]($style)'
 disabled = false
-
-# An alternative to the username module which displays a symbol that
-# represents the current operating system
-[os]
-style = "bg:#9A348E"
-disabled = true # Disabled by default
-
-[os.symbols]
-Windows = "󰍲 "
-Ubuntu = "󰕈 "
-SUSE = " "
-Raspbian = "󰐿 "
-Mint = "󰣭 "
-Macos = "󰀵 "
-Manjaro = " "
-Linux = "󰌽 "
-Gentoo = "󰣨 "
-Fedora = "󰣛 "
-Alpine = " "
-Amazon = " "
-Android = " "
-Arch = "󰣇 "
-Artix = "󰣇 "
-EndeavourOS = " "
-CentOS = " "
-Debian = "󰣚 "
-Redhat = "󱄛 "
-RedHatEnterprise = "󱄛 "
-Pop = " "
 
 # ----------------------
 # OS & USERNAME
@@ -115,98 +66,6 @@ format = '[ $symbol $branch ]($style)'
 [git_status]
 style = "bg:#FCA17D fg:#000000"
 format = '[$all_status$ahead_behind ]($style)'
-
-# ----------------------
-# LANGUAGES
-# ----------------------
-[c]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[elixir]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[elm]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[golang]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[gradle]
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[haskell]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[java]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[julia]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[kotlin]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol( $version) ]($style)'
-
-[nodejs]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[nim]
-symbol = "󰆥 "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[php]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[python]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[rust]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-[scala]
-symbol = " "
-style = "bg:#86BBD8 fg:#000000"
-format = '[ $symbol ($version) ]($style)'
-
-# ----------------------
-# DOCKER
-# ----------------------
-[docker_context]
-symbol = " "
-style = "bg:#06969A"
-format = '[ $symbol $context ]($style)'
-
-# ----------------------
-# CONDA
-# ----------------------
-[conda]
-style = "bg:#06969A"
-format = '[ $symbol( $environment) ]($style)'
 
 # ----------------------
 # TIME
