@@ -1,0 +1,145 @@
+# ------------------------------------------------------------
+# Définition des variables de couleur (Ancres YAML)
+# ------------------------------------------------------------
+colors:
+  blanc: &blanc "#FFFFFF"
+
+  noir: &noir "#000000"
+
+  gris_tres_clair: &gris_tres_clair "#EEEEEE"
+  gris_clair: &gris_clair "#DDDDDD"
+  gris_moyen_clair: &gris_moyen_clair "#CCCCCC"
+  gris_moyen: &gris_moyen "#AAAAAA"
+  gris_fonce: &gris_fonce "#9CA0A4"
+  gris_tres_fonce: &gris_tres_fonce "#888888"
+  gris_sombre: &gris_sombre "#777777"
+  gris_tres_sombre: &gris_tres_sombre "#666666"
+
+  bleu_clair: &bleu_clair "#61AFEF"
+  bleu_turquoise: &bleu_turquoise "#00BFFF"
+
+  cyan: &cyan "#56D8C2"
+  cyan_fonce: &cyan_fonce "#00CED1"
+
+  jaune: &jaune "#FFC66D"
+  jaune_date: &jaune_date "#FFDB66"
+
+  orange: &orange "#FFB86C"
+
+  vert_vif: &vert_vif "#7CFC00"
+  vert: &vert "#50FA7B"
+
+  rouge: &rouge "#FF5555"
+
+  rose_magenta: &rose_magenta "#FF79C6"
+
+  violet_clair: &violet_clair "#C678DD"
+  violet: &violet "#BD93F9"
+  violet_fonce: &violet_fonce "#D291FF"
+  violet_pale: &violet_pale "#B57EDC"
+
+# ------------------------------------------------------------
+# Application du thème avec les variables (Alias YAML)
+# ------------------------------------------------------------
+colourful: true
+
+filekinds:
+  normal: {foreground: *blanc}
+  directory: {foreground: *bleu_clair}
+  symlink: {foreground: *cyan}
+  pipe: {foreground: *gris_fonce}
+  block_device: {foreground: *jaune}
+  char_device: {foreground: *jaune}
+  socket: {foreground: *gris_fonce}
+  special: {foreground: *violet_clair}
+  executable: {foreground: *vert_vif}
+  mount_point: {foreground: *bleu_clair}
+
+perms:
+  user_read: {foreground: *gris_clair}
+  user_write: {foreground: *orange}
+  user_execute_file: {foreground: *vert}
+  user_execute_other: {foreground: *vert}
+  group_read: {foreground: *gris_moyen_clair}
+  group_write: {foreground: *orange}
+  group_execute: {foreground: *vert}
+  other_read: {foreground: *gris_moyen}
+  other_write: {foreground: *orange}
+  other_execute: {foreground: *vert}
+  special_user_file: {foreground: *violet}
+  special_other: {foreground: *gris_fonce}
+  attribute: {foreground: *gris_tres_sombre}
+
+size:
+  major: {foreground: *gris_tres_fonce}
+  minor: {foreground: *cyan_fonce}
+  number_byte: {foreground: *blanc}
+  number_kilo: {foreground: *gris_tres_clair}
+  number_mega: {foreground: *bleu_clair}
+  number_giga: {foreground: *violet_fonce}
+  number_huge: {foreground: *rose_magenta}
+  unit_byte: {foreground: *gris_moyen}
+  unit_kilo: {foreground: *bleu_turquoise}
+  unit_mega: {foreground: *violet_pale}
+  unit_giga: {foreground: *rose_magenta}
+  unit_huge: {foreground: *bleu_clair}
+
+users:
+  user_you: {foreground: *blanc}
+  user_root: {foreground: *rouge}
+  user_other: {foreground: *violet_clair}
+  group_yours: {foreground: *blanc}
+  group_other: {foreground: *gris_tres_fonce}
+  group_root: {foreground: *rouge}
+
+links:
+  normal: {foreground: *cyan_fonce}
+  multi_link_file: {foreground: *bleu_clair}
+
+git:
+  new: {foreground: *vert}
+  modified: {foreground: *orange}
+  deleted: {foreground: *rouge}
+  renamed: {foreground: *vert}
+  typechange: {foreground: *violet}
+  ignored: {foreground: *gris_sombre}
+  conflicted: {foreground: *rouge}
+
+git_repo:
+  branch_main: {foreground: *blanc}
+  branch_other: {foreground: *violet}
+  git_clean: {foreground: *vert}
+  git_dirty: {foreground: *rouge}
+
+security_context:
+  colon: {foreground: *gris_tres_fonce}
+  user: {foreground: *blanc}
+  role: {foreground: *violet}
+  typ: {foreground: *gris_tres_fonce}
+  range: {foreground: *violet}
+
+file_type:
+  image: {foreground: *jaune}
+  video: {foreground: "#FF6E6E"} # Note: cette couleur n'était pas utilisée ailleurs
+  music: {foreground: *vert}
+  lossless: {foreground: *cyan_fonce}
+  crypto: {foreground: *gris_tres_fonce}
+  document: {foreground: *blanc}
+  compressed: {foreground: *violet}
+  temp: {foreground: *rouge}
+  compiled: {foreground: *bleu_clair}
+  build: {foreground: *gris_tres_fonce}
+  source: {foreground: *bleu_clair}
+
+punctuation: {foreground: *gris_tres_fonce}
+date: {foreground: *jaune_date}
+inode: {foreground: *gris_tres_sombre}
+blocks: {foreground: *gris_tres_sombre}
+header: {foreground: *blanc}
+octal: {foreground: *cyan_fonce}
+flags: {foreground: *violet}
+
+symlink_path: {foreground: *cyan_fonce}
+control_char: {foreground: *bleu_clair}
+broken_symlink: {foreground: *rouge}
+broken_path_overlay: {foreground: *gris_tres_sombre}

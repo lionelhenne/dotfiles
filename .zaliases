@@ -1,0 +1,59 @@
+# ------------------------------------------------------------
+# Aliases
+# ------------------------------------------------------------
+alias home="clear;cd"
+alias flushcache="sudo killall -HUP mDNSResponder"
+alias update="composer self-update && composer global outdated && brew update && brew outdated && npm update -g && npm outdated -g"
+alias upgrade="composer global update && brew upgrade && npm update -g"
+alias list='
+	GREEN="\033[1;32m"; RESET="\033[0m"; \
+	echo -e "${GREEN}Composer global${RESET}" && \
+	echo -e "${GREEN}---------------${RESET}" && \
+	composer global show --direct | sort && \
+	echo "" && \
+	echo -e "${GREEN}Homebrew Leaves${RESET}" && \
+	echo -e "${GREEN}---------------${RESET}" && \
+	brew leaves | sort && \
+	echo "" && \
+	echo -e "${GREEN}Homebrew Casks${RESET}" && \
+	echo -e "${GREEN}--------------${RESET}" && \
+	brew list --cask | sort && \
+	echo "" && \
+	echo -e "${GREEN}npm global${RESET}" && \
+	echo -e "${GREEN}----------${RESET}" && \
+	npm list -g --depth=0 --parseable | sed "1d" | xargs -n1 basename | sort
+'
+
+# ------------------------------------------------------------
+# micro
+# ------------------------------------------------------------
+alias m="micro"
+
+# ------------------------------------------------------------
+# Dotfiles
+# ------------------------------------------------------------
+alias dots:edit="code $HOME/.dotfiles"
+alias dots:brew="brew bundle dump --global --no-vscode --force --file=$HOME/.dotfiles/.Brewfile"
+
+# ------------------------------------------------------------
+# eza
+# ------------------------------------------------------------
+alias ..="cd .."
+ezaargs="-algOB --hyperlink --group --color=always"
+alias l="eza $ezaargs"
+alias li="eza $ezaargs --icons=always"
+alias lti="eza $ezaargs --recurse --tree --level=2 --ignore-glob='.zsh_sessions|node_modules|.git|.DS_Store' --icons=always"
+alias lt="eza $ezaargs --recurse --tree --level=2 --ignore-glob='.zsh_sessions|node_modules|.git|.DS_Store'"
+alias lta="eza $ezaargs --recurse --tree --level=2"
+
+# ------------------------------------------------------------
+# fd
+# ------------------------------------------------------------
+alias f="fd -Hia --exclude .git --exclude node_modules"
+
+# ------------------------------------------------------------
+# Laravel Artisan
+# ------------------------------------------------------------
+# alias pa="[[ -s ./artisan ]] && php artisan"
+# alias pa:flushcache="[[ -s ./artisan ]] && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear && php artisan optimize:clear"
+# alias pa:buildcache="[[ -s ./artisan ]] && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache"
