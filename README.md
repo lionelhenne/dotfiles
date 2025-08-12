@@ -105,14 +105,6 @@ All tools are configured with a consistent **Catppuccin Macchiato** color scheme
 - **fnm** for Node.js version management
 - **VSCode** CLI integration
 
-## 🎯 Philosophy
-
-These dotfiles prioritize:
-- **Consistency** - Unified color scheme and UX across tools
-- **Performance** - Fast modern alternatives (eza, fd, fnm, atuin)
-- **Developer Experience** - Streamlined workflows for web development
-- **Security** - Git signing with 1Password, secret filtering
-
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
