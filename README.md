@@ -15,15 +15,15 @@ Part of my broader setup: [macOS Development Setup](https://github.com/lionelhen
 ### Development Tools
 - **Terminal**: [Ghostty](https://ghostty.org/) with Catppuccin Macchiato theme
 - **Editor**: [VSCode](https://code.visualstudio.com/) with Catppuccin Macchiato theme
-- **Font**: JetBrainsMono Nerd Font
+- **Font**: JetBrainsMono [Nerd Font](https://www.nerdfonts.com/)
 
 ## 📦 Configured Tools
 
 ### Shell & Prompt
 - **[Starship](https://starship.rs/)** - Cross-shell prompt with custom Pastel Powerline theme
 - **[Atuin](https://atuin.sh/)** - Magical shell history with sync capabilities
-- **zsh-autosuggestions** - Command suggestions based on history
-- **zsh-syntax-highlighting** - Fish shell-like syntax highlighting
+- **[zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)** - Command suggestions based on history
+- **[zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)** - Fish shell-like syntax highlighting
 
 ### File Management
 - **[eza](https://eza.rocks/)** - Modern replacement for `ls` with custom OneDark-inspired theme
@@ -39,7 +39,7 @@ Part of my broader setup: [macOS Development Setup](https://github.com/lionelhen
 
 ## 🎨 Theme & Aesthetics
 
-All tools are configured with a consistent **Catppuccin Macchiato** color scheme:
+All tools are configured with a consistent **[Catppuccin](https://catppuccin.com/) Macchiato** color scheme:
 - Terminal (Ghostty)
 - Code editor (VSCode)
 - File listing (eza custom theme)
