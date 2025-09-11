@@ -54,6 +54,6 @@ alias f="fd -Hia --exclude .git --exclude node_modules"
 # ------------------------------------------------------------
 # Laravel Artisan
 # ------------------------------------------------------------
-# alias pa="[[ -s ./artisan ]] && php artisan"
-# alias pa:flushcache="[[ -s ./artisan ]] && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear && php artisan optimize:clear"
-# alias pa:buildcache="[[ -s ./artisan ]] && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache"
+alias pa="[[ -s ./artisan ]] && php artisan"
+alias pa:flushcache="[[ -s ./artisan ]] && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan event:clear && php artisan optimize:clear"
+alias pa:buildcache="[[ -s ./artisan ]] && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache"
