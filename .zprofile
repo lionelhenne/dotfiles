@@ -5,6 +5,7 @@ directories=(
     "/usr/local/sbin"
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
+    "$HOME/.local/bin"
     "$HOME/.composer/vendor/bin"
     "$HOME/.config/composer/vendor/bin"
     "$HOME/.config/phpmon/bin"

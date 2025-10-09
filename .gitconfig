@@ -1,14 +1,19 @@
 [user]
-	name = Lionel Henné
+	name = Lionel Henne
 	email = lionelhenne@gmail.com
-	signingkey = ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDcznXWJjRDDflySmHlIADLLZK583kQ9v+/rYJXb4C/IhQ+l2ZwErhEMeQkwz09ojcSw9oaD+pnAKpNUHzvd/MbSHq6RtCf0c/5OJvBB+mysxdcwF2jl++JMphIU0BtZ/3uwJvxebb9iaR0cusWDLQwcU5KHBBLJ5ob/xUIIl9FQO23OQWsolSKlrShYQiBf58l+7hA3UmnWx2VPuGAoxLyvJr6hpFVG7MhBpPzt1pzRgDprNLxLMpwrJx6mazau67pcMVW6XROCNUzpm9FLsz5d8BsN9okPmVuRA2+6uA9G8TzHzWtRFns8dDaTkw+PprCwuAtk///K0N87ingMY79MwsNSBXsdw21qUTKQad3SLs9ZyAzJfEmxeefE0KG1QoLS3chgzqLzMo+VjSKcdR+M1hCecEGFgay7+bXZ0OcutkvbY8lkd05nuGimAumoj7K9O4cDJpcYcyAoFtgJHTImPnuJqdMA3w+ymm4HTrCCb3PlN4or2ZUyFfziAmX1cN+AEuQEtWB1Fu4T4RQ4wNkGHvDwPYktha6217BKzDlldBpSsLixlfJR0VV0CuhxpZO+qQesEkad/QKysc5kRAWcpPUcE2HWuRfJEW6IeWUmQdoQf6GNNEVUlHM2EHXT4u8VlmoajBeETAOTUf4OSP7T3+pLCkz412S0Tl10zLLgw==
+  signingkey = ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDcznXWJjRDDflySmHlIADLLZK583kQ9v+/rYJXb4C/IhQ+l2ZwErhEMeQkwz09ojcSw9oaD+pnAKpNUHzvd/MbSHq6RtCf0c/5OJvBB+mysxdcwF2jl++JMphIU0BtZ/3uwJvxebb9iaR0cusWDLQwcU5KHBBLJ5ob/xUIIl9FQO23OQWsolSKlrShYQiBf58l+7hA3UmnWx2VPuGAoxLyvJr6hpFVG7MhBpPzt1pzRgDprNLxLMpwrJx6mazau67pcMVW6XROCNUzpm9FLsz5d8BsN9okPmVuRA2+6uA9G8TzHzWtRFns8dDaTkw+PprCwuAtk///K0N87ingMY79MwsNSBXsdw21qUTKQad3SLs9ZyAzJfEmxeefE0KG1QoLS3chgzqLzMo+VjSKcdR+M1hCecEGFgay7+bXZ0OcutkvbY8lkd05nuGimAumoj7K9O4cDJpcYcyAoFtgJHTImPnuJqdMA3w+ymm4HTrCCb3PlN4or2ZUyFfziAmX1cN+AEuQEtWB1Fu4T4RQ4wNkGHvDwPYktha6217BKzDlldBpSsLixlfJR0VV0CuhxpZO+qQesEkad/QKysc5kRAWcpPUcE2HWuRfJEW6IeWUmQdoQf6GNNEVUlHM2EHXT4u8VlmoajBeETAOTUf4OSP7T3+pLCkz412S0Tl10zLLgw==
+
+[gpg]
+  format = ssh
+
+[gpg "ssh"]
+  program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+
+[commit]
+  gpgsign = true
+
 [core]
-	editor = code --wait
+	editor = micro
+
 [color]
 	ui = auto
-[gpg]
-	format = ssh
-[commit]
-	gpgsign = true
-[gpg "ssh"]
-	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
