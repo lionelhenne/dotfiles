@@ -3,8 +3,8 @@
 # ------------------------------------------------------------
 alias home="clear;cd"
 alias flushcache="sudo killall -HUP mDNSResponder"
-alias update="composer self-update && composer global outdated && brew update && brew outdated && npm update -g && npm outdated -g"
-alias upgrade="composer global update && brew upgrade && npm update -g"
+alias update="composer self-update && composer global outdated && brew update && brew outdated --formula && npm update -g && npm outdated -g"
+alias upgrade="composer global update && brew upgrade --formula && npm update -g && brew cleanup"
 alias list='
 	GREEN="\033[1;32m"; RESET="\033[0m"; \
 	echo "" && \
