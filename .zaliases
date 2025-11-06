@@ -39,12 +39,6 @@ alias list='
 alias m="micro"
 
 # ------------------------------------------------------------
-# Dotfiles
-# ------------------------------------------------------------
-alias dots:edit="code $HOME/.dotfiles"
-alias dots:brew="brew bundle dump --global --no-vscode --force --file=$HOME/.dotfiles/.Brewfile"
-
-# ------------------------------------------------------------
 # eza
 # ------------------------------------------------------------
 alias ..="cd .."
