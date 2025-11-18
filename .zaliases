@@ -55,18 +55,8 @@ alias lta="eza $ezaargs --recurse --tree --level=2"
 alias f="fd -Hia --exclude .git --exclude node_modules"
 
 # ------------------------------------------------------------
-# Laravel Artisan
+# Laravel 
 # ------------------------------------------------------------
 alias pa="[[ -s ./artisan ]] && php artisan"
-
-alias pa:buildcache='pa config:cache && \
-pa route:cache && \
-pa view:cache && \
-pa event:cache'
-
-alias pa:flushcache='pa cache:clear && \
-pa config:clear && \
-pa route:clear && \
-pa view:clear && \
-pa event:clear && \
-pa optimize:clear'
+alias @laravel="laravel-tool"
+alias @backup="mbu"

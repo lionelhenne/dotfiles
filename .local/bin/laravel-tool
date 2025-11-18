@@ -1,0 +1,335 @@
+#!/bin/bash
+set -u # On retire -e pour gérer nous-mêmes les erreurs si besoin, et -o pipefail n'est pas nécessaire ici
+
+# ==============================================================================
+# CONFIGURATION & COLORS
+# ==============================================================================
+readonly RED=$'\033[0;31m'
+readonly GREEN=$'\033[0;32m'
+readonly YELLOW=$'\033[0;33m'
+readonly BLUE=$'\033[0;34m'
+readonly CYAN=$'\033[0;36m'
+readonly GRAY=$'\033[0;90m'
+readonly WHITE=$'\033[0;97m'
+readonly BOLD=$'\033[1m'
+readonly RESET=$'\033[0m'
+
+readonly GITHUB_URL="https://raw.githubusercontent.com/lionelhenne/laravel-setup/refs/heads/main"
+readonly WIDTH=60
+
+# Global State for Install
+INSTALL_CSP=true
+INSTALL_COCKPIT=true
+VISUAL_HISTORY=""
+
+# ==============================================================================
+# UI HELPER FUNCTIONS
+# ==============================================================================
+
+get_visible_length() {
+    local content="$1"
+    local clean_content=$(echo -e "$content" | sed "s/\x1B\[[0-9;]*[a-zA-Z]//g")
+    echo ${#clean_content}
+}
+
+draw_frame_top() {
+    local text="$1"
+    local width="$2"
+    local text_len=$(get_visible_length "$text")
+    local line_len=$((width - text_len - 4)) 
+    if [ $line_len -lt 0 ]; then line_len=0; fi
+    local line=$(printf '%*s' "$line_len" '' | tr ' ' '─')
+    echo -e "${GRAY}┌ ${WHITE}${text} ${GRAY}${line}┐${RESET}"
+}
+
+draw_frame_row() {
+    local content="$1" 
+    local width="$2"
+    local visible_len=$(get_visible_length "$content")
+    local padding_len=$((width - visible_len - 3))
+    if [ $padding_len -lt 0 ]; then padding_len=0; fi
+    local padding=$(printf '%*s' "$padding_len" '')
+    echo -e "${GRAY}│ ${RESET}${content}${padding}${GRAY}│${RESET}"
+}
+
+draw_frame_bottom() {
+    local width="$1"
+    local line_len=$((width - 2))
+    local line=$(printf '%*s' "$line_len" '' | tr ' ' '─')
+    echo -e "${GRAY}└${line}┘${RESET}"
+}
+
+print_intro() {
+    echo
+    echo -e "🚀 ${BOLD}${BLUE}LARAVEL CUSTOM TOOL ${RESET}"
+    echo
+}
+
+log_header() { printf "\n${BOLD}${GREEN}=== %s ===${RESET}\n" "$1"; }
+log_info()   { printf "${BLUE}[INFO] %s${RESET}\n" "$1"; }
+log_error()  { printf "${RED}[ERROR] %s${RESET}\n" "$1" >&2; exit 1; }
+log_success(){ printf "${GREEN}[SUCCESS] %s${RESET}\n" "$1"; }
+
+# ==============================================================================
+# GENERIC SELECTOR (Used for Install & Cache)
+# ==============================================================================
+# Usage: ask_visual_select "Question" "Option1" "Option2" ...
+# Returns: Index of selection (0, 1, 2...) via $?
+ask_visual_select() {
+    local question="$1"
+    shift
+    local options=("$@")
+    local selected=0
+    local key
+
+    tput civis 
+
+    while true; do
+        clear
+        print_intro
+        
+        if [[ -n "$VISUAL_HISTORY" ]]; then
+            echo -e "$VISUAL_HISTORY"
+            echo
+        fi
+        
+        draw_frame_top "$question" "$WIDTH"
+
+        for i in "${!options[@]}"; do
+            local symbol="○"
+            local label="${options[$i]}"
+            local formatted_row=""
+
+            if [ $i -eq $selected ]; then
+                symbol="●"
+                formatted_row="${CYAN}${symbol} ${BOLD}${label}${RESET}"
+            else
+                formatted_row="${GRAY}${symbol} ${label}${RESET}"
+            fi
+            
+            draw_frame_row "$formatted_row" "$WIDTH"
+        done
+        
+        draw_frame_bottom "$WIDTH"
+
+        read -rsn1 key < /dev/tty
+        case $key in
+            $'\x1b')
+                read -rsn2 key < /dev/tty
+                case $key in
+                    '[A') ((selected--)); [ $selected -lt 0 ] && selected=$((${#options[@]}-1)) ;;
+                    '[B') ((selected++)); [ $selected -ge ${#options[@]} ] && selected=0 ;;
+                esac
+                ;;
+            '') break ;;
+        esac
+    done
+
+    tput cnorm 
+    return $selected
+}
+
+add_to_history() {
+    local question="$1"
+    local answer_text="$2"
+    local color="$3" # GREEN or RED or GRAY
+    
+    VISUAL_HISTORY+="${GRAY}${question}${RESET} ${color}${answer_text}${RESET}\n"
+}
+
+# ==============================================================================
+# MODULE: INSTALL
+# ==============================================================================
+
+check_prerequisites() {
+    if [[ ! -f "artisan" ]]; then log_error "❌ Must be run in a Laravel root."; fi
+    if [[ ! -f ".env" ]]; then log_error "❌ .env not found."; fi
+}
+
+prevent_sleep() {
+    if command -v caffeinate >/dev/null 2>&1; then
+        caffeinate -dims &
+        CAFFEINATE_PID=$!
+        trap 'kill "$CAFFEINATE_PID" &>/dev/null 2>&1 || true' EXIT
+    fi
+}
+
+backup_file() {
+    local file="$1"
+    local backup_path="backup/$file"
+    mkdir -p "$(dirname "$backup_path")"
+    if [ -f "$file" ]; then cp "$file" "$backup_path"; fi
+}
+
+cmd_install() {
+    prevent_sleep
+    check_prerequisites
+
+    # Q1: CSP
+    local q1="Install Spatie CSP?"
+    ask_visual_select "$q1" "Yes" "No"
+    if [ $? -eq 0 ]; then 
+        INSTALL_CSP=true
+        add_to_history "$q1" "Yes" "$GREEN"
+    else 
+        INSTALL_CSP=false
+        add_to_history "$q1" "No" "$GRAY"
+    fi
+
+    # Q2: Cockpit
+    local q2="Install Cockpit CMS?"
+    ask_visual_select "$q2" "Yes" "No"
+    if [ $? -eq 0 ]; then 
+        INSTALL_COCKPIT=true
+        add_to_history "$q2" "Yes" "$GREEN"
+    else 
+        INSTALL_COCKPIT=false
+        add_to_history "$q2" "No" "$GRAY"
+    fi
+
+    # Execute
+    clear
+    print_intro
+    echo -e "$VISUAL_HISTORY"
+    echo -e "${CYAN}Installing...${RESET}"
+
+    # --- Backup ---
+    log_header "📦 Backups"
+    local files=(".env" "resources/css/app.css" "resources/js/app.js")
+    if [ "$INSTALL_CSP" = true ]; then files+=("config/csp.php"); fi
+    for file in "${files[@]}"; do backup_file "$file"; log_info "$file"; done
+
+    # --- Composer ---
+    log_header "📦 Composer"
+    if [ "$INSTALL_CSP" = true ]; then
+        log_info "Installing Spatie CSP..."
+        composer require spatie/laravel-csp --no-interaction >/dev/null 2>&1
+        php artisan vendor:publish --tag=csp-config >/dev/null 2>&1
+    fi
+    if [ "$INSTALL_COCKPIT" = true ]; then
+        log_info "Installing Cockpit CMS..."
+        composer require lionelhenne/laravel-cockpit-cms --no-interaction >/dev/null 2>&1
+        php artisan vendor:publish --tag="cockpit-config" >/dev/null 2>&1
+    fi
+
+    # --- Dotenv ---
+    log_header "📦 Configuration (.env)"
+    sed -i '' 's|^APP_URL=http://|APP_URL=https://|g' ".env"
+    sed -i '' 's|^APP_LOCALE=en$|APP_LOCALE=fr|g' ".env"
+    
+    if [ "$INSTALL_CSP" = true ] && ! grep -q "^CSP_REPORT_URI=" ".env"; then
+        cat >> ".env" << 'EOF'
+
+CSP_REPORT_URI=
+CSP_ENABLED=false
+CSP_ENABLED_WHILE_HOT_RELOADING=false
+CSP_NONCE_ENABLED=false
+EOF
+    fi
+
+    if [ "$INSTALL_COCKPIT" = true ] && ! grep -q "^COCKPIT_GRAPHQL_ENDPOINT=" ".env"; then
+        cat >> ".env" << 'EOF'
+
+COCKPIT_URL=
+COCKPIT_GRAPHQL_ENDPOINT=
+COCKPIT_API_TOKEN=
+EOF
+    fi
+    log_info ".env updated"
+
+    # --- Templates ---
+    log_header "📦 Templates"
+    local templates=("resources/css/app.css" "resources/css/_base.css" "resources/js/app.js")
+    if [ "$INSTALL_CSP" = true ]; then templates+=("config/csp.php"); fi
+    for template in "${templates[@]}"; do
+        local url="${GITHUB_URL}/templates/${template}"
+        local dest="${template}"
+        mkdir -p "$(dirname "$dest")"
+        if curl -fsSL "$url" > "$dest"; then log_info "$template"; else log_error "Error: $template"; fi
+    done
+
+    echo
+    log_success "Done! 🚀"
+}
+
+# ==============================================================================
+# MODULE: CACHE
+# ==============================================================================
+
+pa() {
+    php artisan "$@"
+}
+
+cache_clear_actions() {
+    log_header "🧹 Clearing Cache"
+    pa cache:clear
+    pa config:clear
+    pa route:clear
+    pa view:clear
+    pa event:clear
+    pa optimize:clear
+    log_success "All caches cleared!"
+}
+
+cache_build_actions() {
+    log_header "🏗️ Building Cache"
+    pa config:cache
+    pa route:cache
+    pa view:cache
+    pa event:cache
+    log_success "Cache built successfully!"
+}
+
+cmd_cache() {
+    check_prerequisites
+    local subaction="${1:-}"
+
+    if [[ "$subaction" == "clear" ]]; then
+        cache_clear_actions
+    elif [[ "$subaction" == "build" ]]; then
+        cache_build_actions
+    else
+        # No argument provided -> Show Selector
+        ask_visual_select "Manage Cache" "Clear (Purge everything)" "Build (Warm up cache)"
+        local choice=$?
+        
+        clear
+        print_intro
+        
+        if [ $choice -eq 0 ]; then
+            cache_clear_actions
+        else
+            cache_build_actions
+        fi
+    fi
+}
+
+# ==============================================================================
+# MAIN DISPATCHER
+# ==============================================================================
+
+main() {
+    local command="${1:-}"
+    local arg="${2:-}"
+
+    case "$command" in
+        install)
+            cmd_install
+            ;;
+        cache)
+            cmd_cache "$arg"
+            ;;
+        *)
+            print_intro
+            echo -e "${YELLOW}Usage:${RESET}"
+            echo -e "  @laravel install       ${GRAY}Run the interactive setup installer${RESET}"
+            echo -e "  @laravel cache         ${GRAY}Open cache menu (Clear/Build)${RESET}"
+            echo -e "  @laravel cache clear   ${GRAY}Run clear commands directly${RESET}"
+            echo -e "  @laravel cache build   ${GRAY}Run build commands directly${RESET}"
+            echo
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

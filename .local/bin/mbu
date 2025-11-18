@@ -1,0 +1,244 @@
+#!/bin/bash
+set -euo pipefail
+
+readonly RED=$'\033[0;31m'
+readonly GREEN=$'\033[0;32m'
+readonly YELLOW=$'\033[0;33m'
+readonly BLUE=$'\033[0;34m'
+readonly BOLD=$'\033[1m'
+readonly RESET=$'\033[0m'
+
+readonly DEFAULT_BACKUP_DIR="/Users/lionelhenne/Library/Mobile Documents/com~apple~CloudDocs/mbuBackups"
+
+log_error() { printf "${RED}[ERROR] %s${RESET}\n" "$1" >&2; exit 1; }
+log_success() { printf "${GREEN}[SUCCESS] %s${RESET}\n" "$1"; }
+log_warning() { printf "${YELLOW}[WARNING] %s${RESET}\n" "$1"; }
+log_info() { printf "${BLUE}[INFO] %s${RESET}\n" "$1"; }
+
+usage() {
+    cat << EOF
+Usage: backup [option] [app]
+
+Options:
+  -b <app>    Backup de l'application
+  -r <app>    Restore de l'application
+  -l          Liste les applications disponibles
+
+Exemples:
+  mbu -b iconjar
+  mbu -r vscode
+  mbu -l
+
+Note: Le script cherche d'abord dans le répertoire courant,
+      puis dans ${DEFAULT_BACKUP_DIR}
+EOF
+    exit 1
+}
+
+get_working_directory() {
+    local found=0
+    
+    for dir in */; do
+        if [[ -f "${dir}config.txt" ]]; then
+            found=1
+            break
+        fi
+    done
+    
+    if [[ $found -eq 0 ]]; then
+        if [[ -d "$DEFAULT_BACKUP_DIR" ]]; then
+            log_warning "Aucune app trouvée dans le répertoire courant" >&2
+            log_info "Basculement vers ${DEFAULT_BACKUP_DIR}" >&2
+            echo "$DEFAULT_BACKUP_DIR"
+        else
+            log_error "Aucune app trouvée et le dossier par défaut n'existe pas: ${DEFAULT_BACKUP_DIR}"
+        fi
+    else
+        echo "$(pwd)"
+    fi
+}
+
+list_apps() {
+    local working_dir=$(get_working_directory)
+    cd "$working_dir" || log_error "Impossible d'accéder à ${working_dir}"
+    
+    local found=0
+    
+    echo "Applications configurées dans ${working_dir}:"
+    for dir in */; do
+        if [[ -f "${dir}config.txt" ]]; then
+            echo "  - ${dir%/}"
+            found=1
+        fi
+    done
+    
+    if [[ $found -eq 0 ]]; then
+        echo "  Aucune application trouvée"
+    fi
+}
+
+read_config() {
+    local config_file="$1"
+    
+    if [[ ! -f "$config_file" ]]; then
+        log_error "Fichier de config non trouvé: $config_file"
+    fi
+    
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        
+        line="${line//\$HOME/$HOME}"
+        line="${line/#\~/$HOME}"
+        line="${line## }"
+        line="${line%% }"
+        
+        echo "$line"
+    done < "$config_file"
+}
+
+backup() {
+    local app="$1"
+    local working_dir=$(get_working_directory)
+    cd "$working_dir" || log_error "Impossible d'accéder à ${working_dir}"
+    
+    local config_file="${app}/config.txt"
+    local backup_archive="${app}/backup.tar.gz"
+    local temp_dir="/tmp/mbu-${app}-$$"
+    
+    if [[ ! -f "$config_file" ]]; then
+        log_error "Config non trouvée: $config_file"
+    fi
+    
+    log_info "Backup de ${app}..."
+    
+    mkdir -p "$temp_dir"
+    
+    local count=0
+    
+    while IFS= read -r path; do
+        if [[ -z "$path" ]]; then
+            continue
+        fi
+        
+        if [[ ! -e "$path" ]]; then
+            log_warning "Ignoré (inexistant): $path"
+            continue
+        fi
+        
+        local relative_path="${path#$HOME/}"
+        local dest="${temp_dir}/${relative_path}"
+        local dest_dir="$(dirname "$dest")"
+        
+        mkdir -p "$dest_dir"
+        
+        if [[ -d "$path" ]]; then
+            rsync -a --delete "$path/" "$dest/" 2>/dev/null
+            echo "  ✓ ${relative_path}/"
+        else
+            rsync -a "$path" "$dest" 2>/dev/null
+            echo "  ✓ ${relative_path}"
+        fi
+        
+        ((count++))
+    done < <(read_config "$config_file")
+    
+    if [[ $count -eq 0 ]]; then
+        rm -rf "$temp_dir"
+        log_error "Aucun fichier à sauvegarder"
+    fi
+    
+    log_info "Compression de l'archive..."
+    tar -czf "$backup_archive" -C "$temp_dir" . 2>/dev/null
+    
+    rm -rf "$temp_dir"
+    
+    local archive_size=$(du -h "$backup_archive" | cut -f1)
+    log_success "Backup de ${app} terminé (${count} élément(s), ${archive_size})"
+}
+
+restore() {
+    local app="$1"
+    local working_dir=$(get_working_directory)
+    cd "$working_dir" || log_error "Impossible d'accéder à ${working_dir}"
+    
+    local config_file="${app}/config.txt"
+    local backup_archive="${app}/backup.tar.gz"
+    local temp_dir="/tmp/mbu-${app}-$$"
+    
+    if [[ ! -f "$config_file" ]]; then
+        log_error "Config non trouvée: $config_file"
+    fi
+    
+    if [[ ! -f "$backup_archive" ]]; then
+        log_error "Archive backup non trouvée: $backup_archive"
+    fi
+    
+    log_info "Restore de ${app}..."
+    
+    log_info "Décompression de l'archive..."
+    mkdir -p "$temp_dir"
+    tar -xzf "$backup_archive" -C "$temp_dir" 2>/dev/null
+    
+    local count=0
+    
+    while IFS= read -r path; do
+        if [[ -z "$path" ]]; then
+            continue
+        fi
+        
+        local relative_path="${path#$HOME/}"
+        local source="${temp_dir}/${relative_path}"
+        
+        if [[ ! -e "$source" ]]; then
+            log_warning "Ignoré (pas dans backup): $relative_path"
+            continue
+        fi
+        
+        local parent_dir="$(dirname "$path")"
+        mkdir -p "$parent_dir"
+        
+        if [[ -d "$source" ]]; then
+            mkdir -p "$path"
+            rsync -a --delete "$source/" "$path/" 2>/dev/null
+            echo "  ✓ ${relative_path}/"
+        else
+            rsync -a "$source" "$path" 2>/dev/null
+            echo "  ✓ ${relative_path}"
+        fi
+        
+        ((count++))
+    done < <(read_config "$config_file")
+    
+    rm -rf "$temp_dir"
+    
+    if [[ $count -eq 0 ]]; then
+        log_error "Aucun fichier à restaurer"
+    fi
+    
+    log_success "Restore de ${app} terminé (${count} élément(s))"
+}
+
+main() {
+    if [[ $# -eq 0 ]]; then
+        usage
+    fi
+
+    case "$1" in
+        -b)
+            [[ -z "${2:-}" ]] && log_error "Nom de l'app requis"
+            backup "$2"
+            ;;
+        -r)
+            [[ -z "${2:-}" ]] && log_error "Nom de l'app requis"
+            restore "$2"
+            ;;
+        -l)
+            list_apps
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
+main "$@"
