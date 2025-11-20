@@ -35,14 +35,14 @@ log_success(){ printf "${GREEN}[SUCCESS] %s${RESET}\n" "$1"; }
 usage() {
     print_intro
     echo -e "${YELLOW}Usage:${RESET}"
-    echo -e "  mbu -b <app>   ${GRAY}Backup specific application${RESET}"
-    echo -e "  mbu -r <app>   ${GRAY}Restore specific application${RESET}"
-    echo -e "  mbu -l         ${GRAY}List available applications${RESET}"
+    echo -e "  @backup -b <app>   ${GRAY}Backup specific application${RESET}"
+    echo -e "  @backup -r <app>   ${GRAY}Restore specific application${RESET}"
+    echo -e "  @backup -l         ${GRAY}List available applications${RESET}"
     echo
     echo -e "${YELLOW}Examples:${RESET}"
-    echo -e "  mbu -b iconjar"
-    echo -e "  mbu -r vscode"
-    echo -e "  mbu -l"
+    echo -e "  @backup -b iconjar"
+    echo -e "  @backup -r vscode"
+    echo -e "  @backup -l"
     echo
     echo -e "${GRAY}Note: Script searches in current directory first,"
     echo -e "      then falls back to: ${DEFAULT_BACKUP_DIR}${RESET}"
