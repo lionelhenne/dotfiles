@@ -112,7 +112,7 @@ run() {
     fi
     
     # Load fnm in current shell
-    eval "$(fnm env --use-on-cd --shell zsh)"
+    eval "$(fnm env --use-on-cd --shell bash)"
 
     if fnm list | grep -q "lts"; then
         log_warn "Node.js LTS already installed"
