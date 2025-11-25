@@ -1,57 +1,28 @@
 #!/bin/bash
-set -u
+
+set -euo pipefail
+
+readonly SCRIPT_DIR="$HOME/.local/lib"
 
 # ==============================================================================
-# CONFIGURATION & COLORS
+# LOAD COMMON LIBRARY
 # ==============================================================================
-readonly RED=$'\033[0;31m'
-readonly GREEN=$'\033[0;32m'
-readonly YELLOW=$'\033[0;33m'
-readonly BLUE=$'\033[0;34m'
-readonly CYAN=$'\033[0;36m'
-readonly GRAY=$'\033[0;90m'
-readonly WHITE=$'\033[0;97m'
-readonly BOLD=$'\033[1m'
-readonly RESET=$'\033[0m'
+
+if [[ ! -f "$SCRIPT_DIR/_common.sh" ]]; then
+    echo "❌ Common library not found: $SCRIPT_DIR/_common.sh"
+    exit 1
+fi
+
+source "$SCRIPT_DIR/_common.sh"
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
 
 readonly DEFAULT_BACKUP_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/mbuBackups"
 
 # ==============================================================================
-# LOGGING & UI UTILS
-# ==============================================================================
-
-print_intro() {
-    echo
-    echo -e "📦 ${BOLD}${BLUE}MAC BACKUP UTILITY ${RESET}"
-    echo
-}
-
-log_header() { printf "\n${BOLD}${GREEN}=== %s ===${RESET}\n" "$1"; }
-log_info()   { printf "${BLUE}[INFO] %s${RESET}\n" "$1"; }
-log_warning() { printf "${YELLOW}[WARNING] %s${RESET}\n" "$1"; }
-log_error()  { printf "${RED}[ERROR] %s${RESET}\n" "$1" >&2; exit 1; }
-log_success(){ printf "${GREEN}[SUCCESS] %s${RESET}\n" "$1"; }
-
-usage() {
-    print_intro
-    echo -e "${YELLOW}Usage:${RESET}"
-    echo -e "  @backup -b <app>   ${GRAY}Backup specific application${RESET}"
-    echo -e "  @backup -r <app>   ${GRAY}Restore specific application${RESET}"
-    echo -e "  @backup -l         ${GRAY}List available applications${RESET}"
-    echo
-    echo -e "${YELLOW}Examples:${RESET}"
-    echo -e "  @backup -b iconjar"
-    echo -e "  @backup -r vscode"
-    echo -e "  @backup -l"
-    echo
-    echo -e "${GRAY}Note: Script searches in current directory first,"
-    echo -e "      then falls back to: ${DEFAULT_BACKUP_DIR}${RESET}"
-    echo
-    exit 1
-}
-
-# ==============================================================================
-# CORE LOGIC
+# HELPERS
 # ==============================================================================
 
 get_working_directory() {
@@ -67,12 +38,11 @@ get_working_directory() {
     
     if [[ $found -eq 0 ]]; then
         if [[ -d "$DEFAULT_BACKUP_DIR" ]]; then
-            # Output to stderr so it doesn't mess up the echo return
-            log_warning "No apps found in current directory." >&2
-            log_info "Switching to default directory: ${DEFAULT_BACKUP_DIR}" >&2
+            log_warn "No apps found in current directory" >&2
+            log_info "Switching to: ${DEFAULT_BACKUP_DIR}" >&2
             echo "$DEFAULT_BACKUP_DIR"
         else
-            log_error "No apps found and default directory does not exist: ${DEFAULT_BACKUP_DIR}"
+            log_error "No apps found and default directory does not exist"
         fi
     else
         echo "$(pwd)"
@@ -102,12 +72,16 @@ read_config() {
     done < "$config_file"
 }
 
+# ==============================================================================
+# COMMANDS
+# ==============================================================================
+
 list_apps() {
     local working_dir
     working_dir=$(get_working_directory)
     cd "$working_dir" || log_error "Cannot access ${working_dir}"
     
-    log_header "Available Applications"
+    log_header "MAC BACKUP UTILITY | Available Applications"
     echo -e "${GRAY}Directory: ${working_dir}${RESET}"
     echo
     
@@ -135,7 +109,7 @@ backup() {
     local backup_archive="${app}/backup.tar.gz"
     local temp_dir="/tmp/mbu-${app}-$$"
     
-    log_header "Backup: ${app}"
+    log_header "MAC BACKUP UTILITY | Backup: ${app}"
     
     if [[ ! -f "$config_file" ]]; then
         log_error "Config not found: $config_file"
@@ -149,7 +123,7 @@ backup() {
         [[ -z "$path" ]] && continue
         
         if [[ ! -e "$path" ]]; then
-            log_warning "Skipped (path does not exist): $path"
+            log_warn "Skipped (not found): $path"
             continue
         fi
         
@@ -162,10 +136,10 @@ backup() {
         
         if [[ -d "$path" ]]; then
             rsync -a --delete "$path/" "$dest/" 2>/dev/null
-            echo -e "  ${GREEN}✓${RESET} ${relative_path}/"
+            log_success "${relative_path}/"
         else
             rsync -a "$path" "$dest" 2>/dev/null
-            echo -e "  ${GREEN}✓${RESET} ${relative_path}"
+            log_success "${relative_path}"
         fi
         
         ((count++))
@@ -173,19 +147,22 @@ backup() {
     
     if [[ $count -eq 0 ]]; then
         rm -rf "$temp_dir"
-        log_error "No files found to backup."
+        log_error "No files found to backup"
     fi
     
     log_info "Compressing archive..."
-    tar -czf "$backup_archive" -C "$temp_dir" . 2>/dev/null
-    
-    rm -rf "$temp_dir"
-    
-    local archive_size
-    archive_size=$(du -h "$backup_archive" | cut -f1)
-    
-    echo
-    log_success "Backup completed! (${count} items, ${archive_size})"
+    if tar -czf "$backup_archive" -C "$temp_dir" . 2>/dev/null; then
+        rm -rf "$temp_dir"
+        
+        local archive_size
+        archive_size=$(du -h "$backup_archive" | cut -f1)
+        
+        echo
+        log_success "Backup completed (${count} items, ${archive_size})"
+    else
+        rm -rf "$temp_dir"
+        log_error "Failed to create archive"
+    fi
 }
 
 restore() {
@@ -198,7 +175,7 @@ restore() {
     local backup_archive="${app}/backup.tar.gz"
     local temp_dir="/tmp/mbu-${app}-$$"
     
-    log_header "Restore: ${app}"
+    log_header "MAC BACKUP UTILITY | Restore: ${app}"
     
     if [[ ! -f "$config_file" ]]; then
         log_error "Config not found: $config_file"
@@ -210,7 +187,10 @@ restore() {
     
     log_info "Extracting archive..."
     mkdir -p "$temp_dir"
-    tar -xzf "$backup_archive" -C "$temp_dir" 2>/dev/null
+    if ! tar -xzf "$backup_archive" -C "$temp_dir" 2>/dev/null; then
+        rm -rf "$temp_dir"
+        log_error "Failed to extract archive"
+    fi
     
     local count=0
     
@@ -221,7 +201,7 @@ restore() {
         local source="${temp_dir}/${relative_path}"
         
         if [[ ! -e "$source" ]]; then
-            log_warning "Skipped (not in backup): $relative_path"
+            log_warn "Skipped (not in backup): $relative_path"
             continue
         fi
         
@@ -232,10 +212,10 @@ restore() {
         if [[ -d "$source" ]]; then
             mkdir -p "$path"
             rsync -a --delete "$source/" "$path/" 2>/dev/null
-            echo -e "  ${GREEN}✓${RESET} ${relative_path}/"
+            log_success "${relative_path}/"
         else
             rsync -a "$source" "$path" 2>/dev/null
-            echo -e "  ${GREEN}✓${RESET} ${relative_path}"
+            log_success "${relative_path}"
         fi
         
         ((count++))
@@ -244,36 +224,47 @@ restore() {
     rm -rf "$temp_dir"
     
     if [[ $count -eq 0 ]]; then
-        log_error "No files found to restore."
+        log_error "No files found to restore"
     fi
     
     echo
-    log_success "Restore completed! (${count} items restored)"
+    log_success "Restore completed (${count} items restored)"
+}
+
+display_help() {
+    log_header "MAC BACKUP UTILITY"
+    echo -e "${YELLOW}${BOLD}COMMANDS${RESET}"
+    echo -e "  @backup -b <app>   ${SILVER}Backup specific application${RESET}"
+    echo -e "  @backup -r <app>   ${SILVER}Restore specific application${RESET}"
+    echo -e "  @backup -l         ${SILVER}List available applications${RESET}"
+    echo
+    log_info "Searches in current directory first, then falls back to: ${DEFAULT_BACKUP_DIR}"
+    exit 0
 }
 
 # ==============================================================================
-# MAIN EXECUTION
+# MAIN DISPATCHER
 # ==============================================================================
 
 main() {
     if [[ $# -eq 0 ]]; then
-        usage
+        display_help
     fi
 
     case "$1" in
         -b)
-            [[ -z "${2:-}" ]] && log_error "Application name required."
+            [[ -z "${2:-}" ]] && log_error "Application name required"
             backup "$2"
             ;;
         -r)
-            [[ -z "${2:-}" ]] && log_error "Application name required."
+            [[ -z "${2:-}" ]] && log_error "Application name required"
             restore "$2"
             ;;
         -l)
             list_apps
             ;;
         *)
-            usage
+            display_help
             ;;
     esac
 }

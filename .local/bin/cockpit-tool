@@ -1,130 +1,25 @@
 #!/bin/bash
-set -u
+
+set -euo pipefail
+
+readonly SCRIPT_DIR="$HOME/.local/lib"
 
 # ==============================================================================
-# CONFIGURATION & COLORS
+# LOAD COMMON LIBRARY
 # ==============================================================================
-readonly RED=$'\033[0;31m'
-readonly GREEN=$'\033[0;32m'
-readonly YELLOW=$'\033[0;33m'
-readonly BLUE=$'\033[0;34m'
-readonly CYAN=$'\033[0;36m'
-readonly GRAY=$'\033[0;90m'
-readonly WHITE=$'\033[0;97m'
-readonly BOLD=$'\033[1m'
-readonly RESET=$'\033[0m'
+
+if [[ ! -f "$SCRIPT_DIR/_common.sh" ]]; then
+    echo "❌ Common library not found: $SCRIPT_DIR/_common.sh"
+    exit 1
+fi
+
+source "$SCRIPT_DIR/_common.sh"
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
 
 readonly URL_DOWNLOAD="https://files.getcockpit.com/releases/master/cockpit-core.zip"
-readonly WIDTH=60
-
-# ==============================================================================
-# UI HELPER FUNCTIONS
-# ==============================================================================
-
-print_intro() {
-    echo
-    echo -e "🚀 ${BOLD}${BLUE}COCKPIT CLI TOOL ${RESET}"
-    echo
-}
-
-log_header()  { printf "\n${BOLD}${GREEN}=== %s ===${RESET}\n" "$1"; }
-log_info()    { printf "${BLUE}[INFO] %s${RESET}\n" "$1"; }
-log_warning() { printf "${YELLOW}[WARNING] %s${RESET}\n" "$1"; }
-log_error()   { printf "${RED}[ERROR] %s${RESET}\n" "$1" >&2; exit 1; }
-log_success() { printf "${GREEN}[SUCCESS] %s${RESET}\n" "$1"; }
-
-get_visible_length() {
-    local content="$1"
-    local clean_content=$(echo -e "$content" | sed "s/\x1B\[[0-9;]*[a-zA-Z]//g")
-    echo ${#clean_content}
-}
-
-draw_frame_top() {
-    local text="$1"
-    local width="$2"
-    local text_len=$(get_visible_length "$text")
-    local line_len=$((width - text_len - 4)) 
-    if [ $line_len -lt 0 ]; then line_len=0; fi
-    local line=$(printf '%*s' "$line_len" '' | tr ' ' '─')
-    echo -e "${GRAY}┌ ${WHITE}${text} ${GRAY}${line}┐${RESET}"
-}
-
-draw_frame_row() {
-    local content="$1" 
-    local width="$2"
-    local visible_len=$(get_visible_length "$content")
-    local padding_len=$((width - visible_len - 3))
-    if [ $padding_len -lt 0 ]; then padding_len=0; fi
-    local padding=$(printf '%*s' "$padding_len" '')
-    echo -e "${GRAY}│ ${RESET}${content}${padding}${GRAY}│${RESET}"
-}
-
-draw_frame_bottom() {
-    local width="$1"
-    local line_len=$((width - 2))
-    local line=$(printf '%*s' "$line_len" '' | tr ' ' '─')
-    echo -e "${GRAY}└${line}┘${RESET}"
-}
-
-# Menu qui se redessine "in-place" sans effacer l'écran
-ask_visual_select() {
-    local question="$1"
-    shift
-    local options=("$@")
-    local selected=0
-    local key
-    local height=$(( ${#options[@]} + 2 )) # Top + Bottom + Options
-
-    tput civis # Cache le curseur
-
-    while true; do
-        # 1. Dessin du menu
-        draw_frame_top "$question" "$WIDTH"
-        for i in "${!options[@]}"; do
-            local symbol="○"
-            local label="${options[$i]}"
-            local formatted_row=""
-
-            if [ $i -eq $selected ]; then
-                symbol="●"
-                formatted_row="${CYAN}${symbol} ${BOLD}${label}${RESET}"
-            else
-                formatted_row="${GRAY}${symbol} ${label}${RESET}"
-            fi
-            draw_frame_row "$formatted_row" "$WIDTH"
-        done
-        draw_frame_bottom "$WIDTH"
-
-        # 2. Input
-        read -rsn1 key < /dev/tty
-        
-        case "$key" in
-            $'\x1b')
-                read -rsn2 key < /dev/tty
-                case "$key" in
-                    '[A') ((selected--)); [ $selected -lt 0 ] && selected=$((${#options[@]}-1)) ;;
-                    '[B') ((selected++)); [ $selected -ge ${#options[@]} ] && selected=0 ;;
-                esac
-                ;;
-            "") break ;; # Entrée
-        esac
-
-        # 3. Effacement du menu pour redessiner (remonte de N lignes)
-        for ((i=0; i<height; i++)); do
-            tput cuu1
-            tput el
-        done
-    done
-
-    # Effacement final du menu une fois le choix fait
-    for ((i=0; i<height; i++)); do
-        tput cuu1
-        tput el
-    done
-
-    tput cnorm # Affiche le curseur
-    return $selected
-}
 
 # ==============================================================================
 # COMMANDS
@@ -134,16 +29,18 @@ cmd_new() {
     local name="${1:-}"
 
     if [[ -z "$name" ]]; then
-        log_error "You must specify a folder name.\nUsage: @cockpit new [name]"
+        prompt "Enter the name of your project:" name
+        
+        if [[ -z "$name" ]]; then
+            log_error "Project name cannot be empty"
+        fi
     fi
 
     if [[ -d "$name" ]]; then
-        log_error "The directory '$name' already exists."
+        log_error "Directory '$name' already exists"
     fi
 
-    # --- Installation Phase ---
-    print_intro
-    log_header "📦 Installing Cockpit CMS"
+    log_header "COCKPIT TOOLBOX | Installing Cockpit CMS"
 
     # 1. Preparation
     mkdir -p "$name"
@@ -152,20 +49,21 @@ cmd_new() {
     # 2. Download
     log_info "Downloading Cockpit Core..."
     if curl -fsSL "$URL_DOWNLOAD" -o "$tmp_zip"; then
-        log_info "Source: getcockpit.com (Master)"
+        log_success "Downloaded from getcockpit.com"
     else
         rm -f "$tmp_zip"
         rmdir "$name"
-        log_error "Unable to download Cockpit."
+        log_error "Unable to download Cockpit"
     fi
 
     # 3. Extraction
     log_info "Extracting files into './$name'..."
     if ! unzip -q "$tmp_zip" -d "$name"; then
         rm -f "$tmp_zip"
-        log_error "Decompression failed."
+        log_error "Decompression failed"
     fi
     rm -f "$tmp_zip"
+    log_success "Files extracted"
 
     # 4. Structure Flattening
     local num_files
@@ -177,13 +75,14 @@ cmd_new() {
         local subfolder_path="$name/$subfolder"
 
         if [[ -d "$subfolder_path" ]]; then
-            log_info "Nested structure detected. Moving files to root..."
+            log_info "Flattening nested structure..."
             (
                 cd "$subfolder_path" || exit 1
                 shopt -s dotglob
                 mv * .. 2>/dev/null
             )
             rmdir "$subfolder_path"
+            log_success "Structure flattened"
         fi
     fi
 
@@ -192,37 +91,36 @@ cmd_new() {
     if [[ -f "$name/index.php" ]]; then
         [[ ! -d "$name/storage" ]] && mkdir -p "$name/storage"
         chmod -R 755 "$name/storage"
+        log_success "Permissions configured"
     else
-        log_warning "index.php not found. Please check the folder content."
-    fi
-
-    log_success "Cockpit installed successfully."
-    echo # Spacer
-
-    # --- Interaction Phase ---
-    local q1="Do you want to secure '$name'?"
-    ask_visual_select "$q1" "Yes" "No"
-    local choice=$?
-
-    if [ $choice -eq 0 ]; then
-        # YES
-        log_header "🔐 Securing with Valet"
-        valet secure "$name"
-    else
-        # NO
-        echo -e "${GRAY}Skipped. (Run manually: valet secure $name)${RESET}"
+        log_warn "index.php not found, skipping permissions"
     fi
 
     echo
-    log_success "All done! 🚀"
+    log_success "Cockpit installed in './$name'"
+    echo
+
+    # Secure with Valet?
+    if confirm "Secure with Valet?" Y; then
+        log_header "COCKPIT TOOLBOX | Securing with Valet"
+        if valet secure "$name"; then
+            log_success "Site secured: https://$name.test"
+        else
+            log_error "Failed to secure with Valet"
+        fi
+    else
+        log_info "Skipped (run manually: valet secure $name)"
+    fi
+
+    echo
+    log_success "Installation completed!"
 }
 
 cmd_update() {
-    print_intro
-    log_header "🔄 Updating Cockpit"
+    log_header "COCKPIT TOOLBOX | Updating Cockpit"
 
     if [[ ! -f "./tower" ]]; then
-        log_error "File './tower' not found. Are you in the project root?"
+        log_error "File './tower' not found (are you in project root?)"
     fi
 
     if [[ ! -x "./tower" ]]; then
@@ -230,8 +128,20 @@ cmd_update() {
         chmod +x ./tower
     fi
 
-    log_info "Running app:update..."
-    ./tower app:update
+    log_info "Running tower app:update..."
+    if ./tower app:update; then
+        log_success "Cockpit updated successfully"
+    else
+        log_error "Update failed"
+    fi
+}
+
+display_help() {
+    log_header "COCKPIT TOOLBOX"
+    echo -e "${YELLOW}${BOLD}COMMANDS${RESET}"
+    echo -e "  @cockpit new [name]   ${SILVER}Install Cockpit CMS in specified folder${RESET}"
+    echo -e "  @cockpit update       ${SILVER}Update Cockpit via ./tower app:update${RESET}"
+    exit 0
 }
 
 # ==============================================================================
@@ -250,12 +160,7 @@ main() {
             cmd_update
             ;;
         *)
-            print_intro
-            echo -e "${YELLOW}Usage:${RESET}"
-            echo -e "  @cockpit new [name]   ${GRAY}Install Cockpit (via getcockpit.com)${RESET}"
-            echo -e "  @cockpit update       ${GRAY}Update via ./tower app:update${RESET}"
-            echo
-            exit 1
+            display_help
             ;;
     esac
 }
