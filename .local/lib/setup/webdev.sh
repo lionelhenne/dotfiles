@@ -22,6 +22,9 @@ run() {
     else
         log_error "Failed to install Laravel tools"
     fi
+    
+    # Add Composer global bin to PATH for this session
+    export PATH="$HOME/.composer/vendor/bin:$PATH"
 
     log_info "Setting up Valet..."
     if valet install; then
