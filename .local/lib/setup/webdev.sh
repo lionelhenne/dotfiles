@@ -1,4 +1,6 @@
 #!/bin/bash
+# webdev.sh
+# Web Development Environment Setup
 
 run() {
     log_header "Web Development Setup"
@@ -9,39 +11,66 @@ run() {
     log_success "Directories created"
 
     # Install PHP, Composer, Laravel Valet
-    log_info "Installing PHP and Composer..."
-    if brew install php composer; then
-        log_success "PHP and Composer installed"
+    if command -v php >/dev/null 2>&1; then
+        log_warn "PHP already installed"
     else
-        log_error "Failed to install PHP or Composer"
+        log_info "Installing PHP..."
+        if brew install php; then
+            log_success "PHP installed"
+        else
+            log_error "Failed to install PHP"
+        fi
     fi
 
-    log_info "Installing Laravel Installer and Valet..."
-    if composer global require laravel/installer laravel/valet; then
-        log_success "Laravel tools installed"
+    if command -v composer >/dev/null 2>&1; then
+        log_warn "Composer already installed"
     else
-        log_error "Failed to install Laravel tools"
+        log_info "Installing Composer..."
+        if brew install composer; then
+            log_success "Composer installed"
+        else
+            log_error "Failed to install Composer"
+        fi
+    fi
+
+    if command -v laravel >/dev/null 2>&1 && command -v valet >/dev/null 2>&1; then
+        log_warn "Laravel Installer and Valet already installed"
+    else
+        log_info "Installing Laravel Installer and Valet..."
+        if composer global require laravel/installer laravel/valet; then
+            log_success "Laravel tools installed"
+        else
+            log_error "Failed to install Laravel tools"
+        fi
     fi
     
     # Add Composer global bin to PATH for this session
     export PATH="$HOME/.composer/vendor/bin:$PATH"
 
-    log_info "Setting up Valet..."
-    if valet install; then
-        log_success "Valet installed"
+    if valet --version >/dev/null 2>&1 && [ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]; then
+        log_warn "Valet already configured"
     else
-        log_error "Failed to install Valet"
+        log_info "Setting up Valet..."
+        if valet install; then
+            log_success "Valet installed"
+        else
+            log_error "Failed to install Valet"
+        fi
+
+        if valet trust; then
+            log_success "Valet trusted"
+        else
+            log_warn "Valet trust failed (may need manual intervention)"
+        fi
     fi
 
-    if valet trust; then
-        log_success "Valet trusted"
+    if valet paths | grep -q "$HOME/Sites"; then
+        log_warn "Sites directory already parked"
     else
-        log_warn "Valet trust failed (may need manual intervention)"
+        log_info "Parking ~/Sites directory..."
+        cd ~/Sites && valet park
+        log_success "Sites directory parked"
     fi
-
-    log_info "Parking ~/Sites directory..."
-    cd ~/Sites && valet park
-    log_success "Sites directory parked"
 
     # Install PHP Monitor
     if [ -d "/Applications/PHP Monitor.app" ]; then
@@ -71,71 +100,103 @@ run() {
     fi
 
     # Install Node.js via fnm
-    log_info "Installing fnm..."
-    if brew install fnm; then
-        log_success "fnm installed"
+    if command -v fnm >/dev/null 2>&1; then
+        log_warn "fnm already installed"
     else
-        log_error "Failed to install fnm"
+        log_info "Installing fnm..."
+        if brew install fnm; then
+            log_success "fnm installed"
+        else
+            log_error "Failed to install fnm"
+        fi
     fi
 
-    log_info "Installing Node.js LTS..."
-    if fnm install --lts; then
-        fnm use lts-latest
-        log_success "Node.js LTS installed"
+    if fnm list | grep -q "lts"; then
+        log_warn "Node.js LTS already installed"
     else
-        log_error "Failed to install Node.js"
+        log_info "Installing Node.js LTS..."
+        if fnm install --lts; then
+            fnm use lts-latest
+            log_success "Node.js LTS installed"
+        else
+            log_error "Failed to install Node.js"
+        fi
     fi
 
-    # Install MySQL and PostgreSQL
-    log_info "Installing MySQL..."
-    if brew install mysql; then
-        log_success "MySQL installed"
+    # Install MySQL
+    if brew list mysql &>/dev/null; then
+        log_warn "MySQL already installed"
     else
-        log_error "Failed to install MySQL"
+        log_info "Installing MySQL..."
+        if brew install mysql; then
+            log_success "MySQL installed"
+        else
+            log_error "Failed to install MySQL"
+        fi
     fi
 
     # Configure MySQL
-    log_info "Starting MySQL service..."
-    brew services start mysql
-    sleep 3
+    if brew services list | grep -q "mysql.*started"; then
+        log_warn "MySQL service already running"
+    else
+        log_info "Starting MySQL service..."
+        brew services start mysql
+        sleep 3
+    fi
 
     log_info "Securing MySQL (root/root)..."
-    if mysql -u root -e "
-        ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
-        DELETE FROM mysql.user WHERE User='';
-        DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-        DROP DATABASE IF EXISTS test;
-        FLUSH PRIVILEGES;
-    " 2>/dev/null; then
-        log_success "MySQL configured"
+    if mysql -u root -e "SELECT 1" 2>/dev/null; then
+        log_warn "MySQL already configured"
     else
-        log_warn "MySQL configuration may have failed"
+        if mysql -u root -e "
+            ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
+            DELETE FROM mysql.user WHERE User='';
+            DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+            DROP DATABASE IF EXISTS test;
+            FLUSH PRIVILEGES;
+        " 2>/dev/null; then
+            log_success "MySQL configured"
+        else
+            log_warn "MySQL configuration may have failed"
+        fi
     fi
 
     # PostgreSQL (optional)
     echo
     if confirm "Install PostgreSQL?" N; then
-        log_info "Installing PostgreSQL..."
-        if brew install postgresql@18; then
-            log_success "PostgreSQL installed"
+        if brew list postgresql@18 &>/dev/null; then
+            log_warn "PostgreSQL already installed"
         else
-            log_error "Failed to install PostgreSQL"
+            log_info "Installing PostgreSQL..."
+            if brew install postgresql@18; then
+                log_success "PostgreSQL installed"
+            else
+                log_error "Failed to install PostgreSQL"
+            fi
         fi
 
-        log_info "Starting PostgreSQL service..."
-        brew link --force postgresql@18
-        brew services start postgresql@18
-        sleep 3
+        if brew services list | grep -q "postgresql@18.*started"; then
+            log_warn "PostgreSQL service already running"
+        else
+            log_info "Starting PostgreSQL service..."
+            brew link --force postgresql@18
+            brew services start postgresql@18
+            sleep 3
+        fi
 
         log_info "Creating postgres user (postgres/postgres)..."
-        if createuser -s postgres 2>/dev/null; then
-            if psql postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null; then
-                log_success "PostgreSQL configured"
-            else
-                log_warn "Failed to set PostgreSQL password"
-            fi
+        if psql postgres -c "SELECT 1" -U postgres 2>/dev/null; then
+            log_warn "PostgreSQL already configured"
         else
-            log_warn "PostgreSQL user may already exist"
+            if createuser -s postgres 2>/dev/null; then
+                if psql postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null; then
+                    log_success "PostgreSQL configured"
+                else
+                    log_warn "Failed to set PostgreSQL password"
+                fi
+            else
+                log_warn "PostgreSQL user may already exist"
+            fi
         fi
     else
         log_info "PostgreSQL installation skipped"
