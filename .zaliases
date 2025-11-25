@@ -58,6 +58,7 @@ alias f="fd -Hia --exclude .git --exclude node_modules"
 # Laravel 
 # ------------------------------------------------------------
 alias pa="[[ -s ./artisan ]] && php artisan"
+alias @setup="setup-tool"
 alias @laravel="laravel-tool"
 alias @cockpit="cockpit-tool"
 alias @backup="backup-tool"
