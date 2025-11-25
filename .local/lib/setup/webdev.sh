@@ -1,6 +1,4 @@
 #!/bin/bash
-# webdev.sh
-# Web Development Environment Setup
 
 run() {
     log_header "Web Development Setup"
@@ -147,20 +145,25 @@ run() {
         sleep 3
     fi
 
-    log_info "Securing MySQL (root/root)..."
-    if mysql -u root -e "SELECT 1" 2>/dev/null; then
-        log_warn "MySQL already configured"
+    log_info "Configuring MySQL (root/root)..."
+    
+    # Check if already configured with password 'root'
+    if mysql -u root -proot -e "SELECT 1" >/dev/null 2>&1; then
+        log_success "MySQL already configured with root/root"
     else
-        if mysql -u root -e "
-            ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
-            DELETE FROM mysql.user WHERE User='';
-            DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-            DROP DATABASE IF EXISTS test;
-            FLUSH PRIVILEGES;
-        " 2>/dev/null; then
-            log_success "MySQL configured"
+        # Not configured with 'root', so configure it (works with empty password on fresh install)
+        log_info "Setting MySQL root password to 'root'..."
+        if mysql -u root <<EOF >/dev/null 2>&1
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+FLUSH PRIVILEGES;
+EOF
+        then
+            log_success "MySQL configured with root/root"
         else
-            log_warn "MySQL configuration may have failed"
+            log_warn "MySQL configuration failed (may already have a different password)"
         fi
     fi
 
@@ -188,7 +191,7 @@ run() {
         fi
 
         log_info "Creating postgres user (postgres/postgres)..."
-        if psql postgres -c "SELECT 1" -U postgres 2>/dev/null; then
+        if psql postgres -c "SELECT 1" -U postgres >/dev/null 2>&1; then
             log_warn "PostgreSQL already configured"
         else
             if createuser -s postgres 2>/dev/null; then
