@@ -65,8 +65,10 @@ run() {
         fi
     fi
     
-    log_info "Launching PHP Monitor..."
-    open -a "PHP Monitor"
+    if [ -d "/Applications/PHP Monitor.app" ]; then
+        log_info "Launching PHP Monitor..."
+        open -a "PHP Monitor" 2>/dev/null || log_warn "Failed to launch PHP Monitor (launch manually)"
+    fi
 
     # Install Node.js via fnm
     log_info "Installing fnm..."
