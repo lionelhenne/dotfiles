@@ -116,6 +116,61 @@ cmd_new() {
     log_success "Installation completed!"
 }
 
+cmd_gitignore() {
+    log_header "COCKPIT TOOLBOX | Create .gitignore file"
+
+    if [[ ! -f "./tower" ]]; then
+        log_error "File './tower' not found (are you in project root?)"
+    fi
+
+    if [[ -f "./.gitignore" ]]; then
+        log_warn ".gitignore already exists"
+        if confirm "Backup and replace?" N; then
+            mv .gitignore .gitignore.backup
+            log_success "Backed up to .gitignore.backup"
+        else
+            log_info ".gitignore creation skipped"
+            return 0
+        fi
+    fi
+
+    cat <<'EOF' > .gitignore
+# Ignore all
+*
+
+# Include only config/ and storage/
+!config/
+!config/**
+!storage/
+!storage/**
+!.gitignore
+!.gitkeep
+
+# Files to ignore even in config/ and storage/
+*.diff
+*.patch
+.claude
+.DS_Store
+.project
+.settings
+.fleet
+.idea
+*.sublime-workspace
+*.sublime-project
+.vscode
+.zed
+.env
+composer.lock
+composer.phar
+package-lock.json
+bun.lockb
+.phpup
+/.spaces/
+EOF
+
+    log_success ".gitignore created"
+}
+
 cmd_update() {
     log_header "COCKPIT TOOLBOX | Updating Cockpit"
 
@@ -140,6 +195,7 @@ display_help() {
     log_header "COCKPIT TOOLBOX"
     echo -e "${YELLOW}${BOLD}COMMANDS${RESET}"
     echo -e "  @cockpit new [name]   ${SILVER}Install Cockpit CMS in specified folder${RESET}"
+    echo -e "  @cockpit gitignore    ${SILVER}Create a specific .gitignore file (keep only config/ and storage/)${RESET}"
     echo -e "  @cockpit update       ${SILVER}Update Cockpit via ./tower app:update${RESET}"
     exit 0
 }
@@ -155,6 +211,9 @@ main() {
     case "$command" in
         new)
             cmd_new "$arg"
+            ;;
+        gitignore)
+            cmd_gitignore
             ;;
         update)
             cmd_update
