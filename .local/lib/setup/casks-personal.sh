@@ -1,0 +1,10 @@
+local browsers="firefox microsoft-edge vivaldi"
+local communication="discord"
+local creative="adobe-creative-cloud affinity"
+local development="postman transmit"
+local gaming="openemu steam"
+local ia="claude"
+local media="handbrake iina spotify"
+local utilities="appcleaner betterdisplay cyberghost-vpn daisydisk localsend setapp suspicious-package transmission virtualbuddy"
+
+CASKS="$browsers $communication $creative $development $gaming $ia $media $utilities"
