@@ -43,19 +43,31 @@ run() {
     
     # Add Composer global bin to PATH for this session
     export PATH="$HOME/.composer/vendor/bin:$PATH"
+    
+    # Debug: verify valet is available
+    if ! command -v valet >/dev/null 2>&1; then
+        log_error "Valet not found in PATH. Please check: ls -la $HOME/.composer/vendor/bin/"
+    fi
 
     # Check if Valet is configured
     if valet --version >/dev/null 2>&1 && [[ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]]; then
         log_warn "Valet already configured"
     else
         log_info "Setting up Valet..."
-        if valet install; then
+        
+        # Call valet directly with full path as fallback
+        local valet_cmd="valet"
+        if ! command -v valet >/dev/null 2>&1; then
+            valet_cmd="$HOME/.composer/vendor/bin/valet"
+        fi
+        
+        if $valet_cmd install; then
             log_success "Valet installed"
         else
             log_error "Failed to install Valet"
         fi
 
-        if valet trust; then
+        if $valet_cmd trust; then
             log_success "Valet trusted"
         else
             log_warn "Valet trust failed (may need manual intervention)"
