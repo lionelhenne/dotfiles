@@ -41,33 +41,28 @@ run() {
         log_error "Failed to install Laravel tools"
     fi
     
-    # Add Composer global bin to PATH for this session
-    export PATH="$HOME/.composer/vendor/bin:$PATH"
+    # Get Composer global bin directory
+    local composer_bin=$(composer global config bin-dir --absolute 2>/dev/null)
     
-    # Debug: verify valet is available
-    if ! command -v valet >/dev/null 2>&1; then
-        log_error "Valet not found in PATH. Please check: ls -la $HOME/.composer/vendor/bin/"
+    if [[ -z "$composer_bin" ]]; then
+        log_error "Failed to detect Composer global bin directory"
     fi
+    
+    # Add Composer global bin to PATH for this session
+    export PATH="$composer_bin:$PATH"
 
     # Check if Valet is configured
     if valet --version >/dev/null 2>&1 && [[ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]]; then
         log_warn "Valet already configured"
     else
         log_info "Setting up Valet..."
-        
-        # Call valet directly with full path as fallback
-        local valet_cmd="valet"
-        if ! command -v valet >/dev/null 2>&1; then
-            valet_cmd="$HOME/.composer/vendor/bin/valet"
-        fi
-        
-        if $valet_cmd install; then
+        if valet install; then
             log_success "Valet installed"
         else
             log_error "Failed to install Valet"
         fi
 
-        if $valet_cmd trust; then
+        if valet trust; then
             log_success "Valet trusted"
         else
             log_warn "Valet trust failed (may need manual intervention)"
