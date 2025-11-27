@@ -1,4 +1,6 @@
 #!/bin/bash
+# webdev.sh
+# Web Development Environment Setup
 
 run() {
     log_header "Web Development Setup"
@@ -45,7 +47,8 @@ run() {
     # Add Composer global bin to PATH for this session
     export PATH="$HOME/.composer/vendor/bin:$PATH"
 
-    if valet --version >/dev/null 2>&1 && [ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]; then
+    # Check if Valet is configured
+    if command -v valet >/dev/null 2>&1 && valet --version >/dev/null 2>&1 && [[ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]]; then
         log_warn "Valet already configured"
     else
         log_info "Setting up Valet..."
