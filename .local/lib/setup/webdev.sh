@@ -217,4 +217,31 @@ EOF
 
     echo
     log_success "Web development environment ready!"
+    echo
+    
+    # Display summary
+    log_info "Installation summary:"
+    echo
+    echo -e "  ${BOLD}Development Stack:${RESET}"
+    echo -e "    ${SILVER}• PHP:${RESET} $(php -v | head -n 1 | awk '{print $2}')"
+    echo -e "    ${SILVER}• Composer:${RESET} $(composer -V | awk '{print $3}')"
+    echo -e "    ${SILVER}• Laravel Valet:${RESET} $(valet --version 2>/dev/null || echo 'installed')"
+    echo -e "    ${SILVER}• Node.js:${RESET} $(node -v 2>/dev/null || echo 'not installed')"
+    echo -e "    ${SILVER}• npm:${RESET} $(npm -v 2>/dev/null || echo 'not installed')"
+    echo
+    echo -e "  ${BOLD}Databases:${RESET}"
+    echo -e "    ${SILVER}• MySQL:${RESET} running (root/root)"
+    
+    if brew services list | grep -q "postgresql@18.*started"; then
+        echo -e "    ${SILVER}• PostgreSQL:${RESET} running (postgres/postgres)"
+    fi
+    echo
+    echo -e "  ${BOLD}Quick Start:${RESET}"
+    echo -e "    ${CYAN}valet park${RESET}           ${SILVER}# Park current directory${RESET}"
+    echo -e "    ${CYAN}laravel new myapp${RESET}    ${SILVER}# Create new Laravel project${RESET}"
+    echo -e "    ${CYAN}mysql -u root -proot${RESET} ${SILVER}# Connect to MySQL${RESET}"
+    if brew services list | grep -q "postgresql@18.*started"; then
+        echo -e "    ${CYAN}psql -U postgres${RESET}     ${SILVER}# Connect to PostgreSQL${RESET}"
+    fi
+    echo
 }
