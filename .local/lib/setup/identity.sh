@@ -1,6 +1,4 @@
 #!/bin/bash
-# identity.sh
-# Git and SSH Configuration via 1Password
 
 run() {
     # Check 1Password CLI
@@ -20,7 +18,7 @@ run() {
         echo "  2. Sign in to your account"
         echo "  3. Go to Settings > Developer"
         echo "  4. Enable 'Connect with 1Password CLI'"
-        echo "  5. (Optional) Enable 'Use Touch ID'"
+        echo "  5. Enable 'SSH Agent'"
         echo
         
         while true; do
@@ -51,10 +49,9 @@ run() {
     if [[ -f "$gitconfig_local" ]]; then
         log_warn "Git config.local already exists"
         echo
-        head -c 100 "$gitconfig_local"
-        echo
-        echo "..."
-        echo
+        echo -e "${SILVER}"
+        cat "$gitconfig_local"
+        echo -e "${RESET}"
         
         if confirm "Backup and replace?" N; then
             cp "$gitconfig_local" "${gitconfig_local}.backup"
@@ -165,27 +162,44 @@ EOF
 # ==============================================================================
 
 configure_ssh() {
-    mkdir -p "$HOME/.ssh"
-    chmod 700 "$HOME/.ssh"
+    local ssh_dir="$HOME/.ssh"
+    local ssh_config="$ssh_dir/config"
+    local ssh_config_local="$ssh_dir/config.local"
     
-    local ssh_config="$HOME/.ssh/config"
-    local ssh_config_local="$HOME/.ssh/config.local"
+    # Check .ssh directory
+    if [[ ! -d "$ssh_dir" ]]; then
+        log_warn ".ssh directory doesn't exist"
+        echo
+        echo "Please enable SSH Agent in 1Password:"
+        echo "  Settings > Developer > Enable SSH Agent"
+        echo
+        
+        if confirm "Create .ssh directory anyway?" N; then
+            mkdir -p "$ssh_dir"
+            chmod 700 "$ssh_dir"
+            log_success ".ssh directory created"
+        else
+            log_info "SSH configuration skipped"
+            echo
+            log_success "Identity setup completed!"
+            return 0
+        fi
+    fi
     
     # Check .ssh/config
     if [[ -f "$ssh_config" ]]; then
         log_warn "SSH config already exists"
         echo
-        head -c 100 "$ssh_config"
-        echo
-        echo "..."
-        echo
+        echo -e "${SILVER}"
+        cat "$ssh_config"
+        echo -e "${RESET}"
         
         if confirm "Backup and replace?" N; then
             cp "$ssh_config" "${ssh_config}.backup"
             log_success "Backed up to ${ssh_config}.backup"
         else
             log_info "SSH config skipped"
-            # Skip to config.local check
+            # Continue to config.local check
             check_ssh_config_local
             return 0
         fi
@@ -218,10 +232,9 @@ check_ssh_config_local() {
     if [[ -f "$ssh_config_local" ]]; then
         log_warn "SSH config.local already exists"
         echo
-        head -c 100 "$ssh_config_local"
-        echo
-        echo "..."
-        echo
+        echo -e "${SILVER}"
+        cat "$ssh_config_local"
+        echo -e "${RESET}"
         
         if confirm "Backup and replace?" N; then
             cp "$ssh_config_local" "${ssh_config_local}.backup"
