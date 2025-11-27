@@ -232,7 +232,7 @@ EOF
     echo -e "    ${SILVER}• Laravel Valet:${RESET} $(composer global show laravel/valet 2>/dev/null | grep 'versions' | awk '{print $NF}')"
     
     if command -v fnm >/dev/null 2>&1; then
-        echo -e "    • Node.js:${RESET} $(node -v 2>/dev/null) ${SILVER}(via fnm ${RESET}$(fnm --version 2>/dev/null | awk '{print $2}')${SILVER})${RESET}"
+        echo -e "    ${SILVER}• Node.js:${RESET} $(node -v 2>/dev/null) ${SILVER}(via fnm ${RESET}$(fnm --version 2>/dev/null | awk '{print $2}')${SILVER})${RESET}"
         echo -e "    ${SILVER}• npm:${RESET} $(npm -v 2>/dev/null)"
     else
         echo -e "    ${SILVER}• Node.js:${RESET} not installed"
