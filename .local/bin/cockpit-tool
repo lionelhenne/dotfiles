@@ -96,6 +96,15 @@ cmd_new() {
         log_warn "index.php not found, skipping permissions"
     fi
 
+    # 6. .gitignore file
+    log_info "Creating custom .gitignore..."
+    if [[ -f "$name/.gitignore" ]]; then
+        mv "$name/.gitignore" "$name/.gitignore.backup"
+        log_info "Original .gitignore backed up"
+    fi
+    create_gitignore_file "$name/.gitignore"
+    log_success ".gitignore created"
+
     echo
     log_success "Cockpit installed in './$name'"
     echo
@@ -116,25 +125,10 @@ cmd_new() {
     log_success "Installation completed!"
 }
 
-cmd_gitignore() {
-    log_header "COCKPIT TOOLBOX | Create .gitignore file"
-
-    if [[ ! -f "./tower" ]]; then
-        log_error "File './tower' not found (are you in project root?)"
-    fi
-
-    if [[ -f "./.gitignore" ]]; then
-        log_warn ".gitignore already exists"
-        if confirm "Backup and replace?" N; then
-            mv .gitignore .gitignore.backup
-            log_success "Backed up to .gitignore.backup"
-        else
-            log_info ".gitignore creation skipped"
-            return 0
-        fi
-    fi
-
-    cat <<'EOF' > .gitignore
+create_gitignore_file() {
+    local target="${1:-.gitignore}"
+    
+    cat <<'EOF' > "$target"
 # Ignore all
 *
 
@@ -167,7 +161,27 @@ bun.lockb
 .phpup
 /.spaces/
 EOF
+}
 
+cmd_gitignore() {
+    log_header "COCKPIT TOOLBOX | Create .gitignore file"
+
+    if [[ ! -f "./tower" ]]; then
+        log_error "File './tower' not found (are you in project root?)"
+    fi
+
+    if [[ -f "./.gitignore" ]]; then
+        log_warn ".gitignore already exists"
+        if confirm "Backup and replace?" N; then
+            mv .gitignore .gitignore.backup
+            log_success "Backed up to .gitignore.backup"
+        else
+            log_info ".gitignore creation skipped"
+            return 0
+        fi
+    fi
+
+    create_gitignore_file ".gitignore"
     log_success ".gitignore created"
 }
 
