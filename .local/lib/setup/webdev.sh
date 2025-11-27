@@ -62,7 +62,7 @@ run() {
             log_error "Failed to install Valet"
         fi
 
-        if valet trust; then
+        if valet trust >/dev/null 2>&1; then
             log_success "Valet trusted"
         else
             log_warn "Valet trust failed (may need manual intervention)"
@@ -227,9 +227,9 @@ EOF
     log_info "Installation summary:"
     echo
     echo -e "  ${BOLD}Development Stack:${RESET}"
-    echo -e "    ${SILVER}• PHP:${RESET} $(php -v | head -n 1 | awk '{print $2}')"
-    echo -e "    ${SILVER}• Composer:${RESET} $(composer -V | awk '{print $3}')"
-    echo -e "    ${SILVER}• Laravel Valet:${RESET} $(valet --version 2>/dev/null || echo 'installed')"
+    echo -e "    ${SILVER}• PHP:${RESET} $(php -v 2>/dev/null | head -n 1 | cut -d' ' -f2)"
+    echo -e "    ${SILVER}• Composer:${RESET} $(composer -V 2>/dev/null | awk '{print $3}')"
+    echo -e "    ${SILVER}• Laravel Valet:${RESET} $(valet --version 2>/dev/null | awk '{print $3}')"
     echo -e "    ${SILVER}• Node.js:${RESET} $(node -v 2>/dev/null || echo 'not installed')"
     echo -e "    ${SILVER}• npm:${RESET} $(npm -v 2>/dev/null || echo 'not installed')"
     echo
