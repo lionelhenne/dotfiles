@@ -46,7 +46,7 @@ backup_file() {
     local file="$1"
     local backup_path="backup/$file"
     mkdir -p "$(dirname "$backup_path")"
-    if [ -f "$file" ]; then 
+    if [[ -f "$file" ]]; then 
         cp "$file" "$backup_path"
     fi
 }
@@ -59,32 +59,30 @@ cmd_install() {
     prevent_sleep
     check_prerequisites
     
-    # Vérification du dossier templates
     if [[ ! -d "$TEMPLATES_DIR" ]]; then
         log_error "Templates directory not found: $TEMPLATES_DIR"
     fi
 
-    log_header "LARAVEL TOOLBOX | Laravel Setup"
+    log_header "Laravel Setup"
 
-    # Q1: CSP
+    # Packages selection
     if confirm "Install Spatie CSP?" Y; then
         INSTALL_CSP=true
     else
         INSTALL_CSP=false
     fi
 
-    # Q2: Cockpit
     if confirm "Install Cockpit CMS?" Y; then
         INSTALL_COCKPIT=true
     else
         INSTALL_COCKPIT=false
     fi
 
-    # --- Backup ---
-    log_header "LARAVEL TOOLBOX | Backups"
+    # Backup files
+    log_header "Backups"
     
     local files=(".env" "resources/css/app.css" "resources/js/app.js")
-    if [ "$INSTALL_CSP" = true ]; then 
+    if [[ "$INSTALL_CSP" == true ]]; then 
         files+=("config/csp.php")
     fi
     
@@ -93,10 +91,10 @@ cmd_install() {
         log_info "Backed up: $file"
     done
 
-    # --- Composer ---
-    log_header "LARAVEL TOOLBOX | Composer Packages"
+    # Install Composer packages
+    log_header "Composer Packages"
     
-    if [ "$INSTALL_CSP" = true ]; then
+    if [[ "$INSTALL_CSP" == true ]]; then
         log_info "Installing Spatie CSP..."
         if composer require spatie/laravel-csp --no-interaction >/dev/null 2>&1; then
             php artisan vendor:publish --tag=csp-config >/dev/null 2>&1
@@ -106,7 +104,7 @@ cmd_install() {
         fi
     fi
     
-    if [ "$INSTALL_COCKPIT" = true ]; then
+    if [[ "$INSTALL_COCKPIT" == true ]]; then
         log_info "Installing Cockpit CMS..."
         if composer require lionelhenne/laravel-cockpit-cms --no-interaction >/dev/null 2>&1; then
             php artisan vendor:publish --tag="cockpit-config" >/dev/null 2>&1
@@ -116,14 +114,12 @@ cmd_install() {
         fi
     fi
 
-    # --- Dotenv ---
-    
-    
+    # Update .env file
     log_info "Updating .env file..."
     sed -i '' 's|^APP_URL=http://|APP_URL=https://|g' ".env"
     sed -i '' 's|^APP_LOCALE=en$|APP_LOCALE=fr|g' ".env"
     
-    if [ "$INSTALL_CSP" = true ] && ! grep -q "^CSP_REPORT_URI=" ".env"; then
+    if [[ "$INSTALL_CSP" == true ]] && ! grep -q "^CSP_REPORT_URI=" ".env"; then
         cat >> ".env" << 'EOF'
 
 CSP_REPORT_URI=
@@ -134,7 +130,7 @@ EOF
         log_success "CSP variables added to .env"
     fi
 
-    if [ "$INSTALL_COCKPIT" = true ] && ! grep -q "^COCKPIT_GRAPHQL_ENDPOINT=" ".env"; then
+    if [[ "$INSTALL_COCKPIT" == true ]] && ! grep -q "^COCKPIT_GRAPHQL_ENDPOINT=" ".env"; then
         cat >> ".env" << 'EOF'
 
 COCKPIT_URL=
@@ -146,11 +142,11 @@ EOF
     
     log_success ".env updated"
 
-    # --- Templates ---
-    log_header "LARAVEL TOOLBOX | Template Files"
+    # Copy template files
+    log_header "Template Files"
     
     local templates=("resources/css/app.css" "resources/css/_base.css" "resources/js/app.js")
-    if [ "$INSTALL_CSP" = true ]; then 
+    if [[ "$INSTALL_CSP" == true ]]; then 
         templates+=("config/csp.php")
     fi
     
@@ -173,6 +169,12 @@ EOF
         fi
     done
 
+    # Copy editor configs
+    log_info "Adding editor configs..."
+    cp "$TEMPLATES_DIR/.editorconfig" .
+    cp "$TEMPLATES_DIR/.prettierrc" .
+    log_success "Editor configs added"
+
     echo
     log_success "Installation completed!"
     echo
@@ -184,11 +186,11 @@ EOF
 # ==============================================================================
 
 display_help() {
-    log_header "LARAVEL TOOLBOX"
+    log_header "Laravel Toolbox"
     echo -e "${YELLOW}${BOLD}COMMANDS${RESET}"
     echo -e "  @laravel install       ${SILVER}Run the interactive setup installer${RESET}"
-    echo -e "  @laravel cache clear   ${SILVER}Clear all caches directly${RESET}"
-    echo -e "  @laravel cache build   ${SILVER}Build/warm up caches directly${RESET}"
+    echo -e "  @laravel cache clear   ${SILVER}Clear all caches${RESET}"
+    echo -e "  @laravel cache build   ${SILVER}Build/warm up caches${RESET}"
     exit 0
 }
 
