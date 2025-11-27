@@ -176,43 +176,47 @@ EOF
 
     # PostgreSQL (optional)
     echo
-    if confirm "Install PostgreSQL?" N; then
-        if brew list postgresql@18 &>/dev/null; then
-            log_warn "PostgreSQL already installed"
-        else
+    
+    # Check if PostgreSQL is already installed
+    if brew list postgresql@18 &>/dev/null; then
+        log_warn "PostgreSQL already installed"
+        
+        # Check if running
+        if ! brew services list | grep -q "postgresql@18.*started"; then
+            log_info "Starting PostgreSQL service..."
+            brew services start postgresql@18
+        fi
+    else
+        if confirm "Install PostgreSQL?" N; then
             log_info "Installing PostgreSQL..."
             if brew install postgresql@18; then
                 log_success "PostgreSQL installed"
             else
                 log_error "Failed to install PostgreSQL"
             fi
-        fi
 
-        if brew services list | grep -q "postgresql@18.*started"; then
-            log_warn "PostgreSQL service already running"
-        else
             log_info "Starting PostgreSQL service..."
             brew link --force postgresql@18
             brew services start postgresql@18
             sleep 3
-        fi
 
-        log_info "Creating postgres user (postgres/postgres)..."
-        if psql postgres -c "SELECT 1" -U postgres >/dev/null 2>&1; then
-            log_warn "PostgreSQL already configured"
-        else
-            if createuser -s postgres 2>/dev/null; then
-                if psql postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null; then
-                    log_success "PostgreSQL configured"
-                else
-                    log_warn "Failed to set PostgreSQL password"
-                fi
+            log_info "Creating postgres user (postgres/postgres)..."
+            if psql postgres -c "SELECT 1" -U postgres >/dev/null 2>&1; then
+                log_warn "PostgreSQL already configured"
             else
-                log_warn "PostgreSQL user may already exist"
+                if createuser -s postgres 2>/dev/null; then
+                    if psql postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null; then
+                        log_success "PostgreSQL configured"
+                    else
+                        log_warn "Failed to set PostgreSQL password"
+                    fi
+                else
+                    log_warn "PostgreSQL user may already exist"
+                fi
             fi
+        else
+            log_info "PostgreSQL installation skipped"
         fi
-    else
-        log_info "PostgreSQL installation skipped"
     fi
 
     echo
