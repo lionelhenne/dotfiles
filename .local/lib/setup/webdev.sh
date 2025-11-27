@@ -33,22 +33,19 @@ run() {
         fi
     fi
 
-    if command -v laravel >/dev/null 2>&1 && command -v valet >/dev/null 2>&1; then
-        log_warn "Laravel Installer and Valet already installed"
+    # Install Laravel Installer and Valet
+    log_info "Installing Laravel Installer and Valet..."
+    if composer global require laravel/installer laravel/valet >/dev/null 2>&1; then
+        log_success "Laravel tools installed"
     else
-        log_info "Installing Laravel Installer and Valet..."
-        if composer global require laravel/installer laravel/valet; then
-            log_success "Laravel tools installed"
-        else
-            log_error "Failed to install Laravel tools"
-        fi
+        log_error "Failed to install Laravel tools"
     fi
     
     # Add Composer global bin to PATH for this session
     export PATH="$HOME/.composer/vendor/bin:$PATH"
 
     # Check if Valet is configured
-    if command -v valet >/dev/null 2>&1 && valet --version >/dev/null 2>&1 && [[ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]]; then
+    if valet --version >/dev/null 2>&1 && [[ -f "$HOME/.config/valet/dnsmasq.d/tld-test.conf" ]]; then
         log_warn "Valet already configured"
     else
         log_info "Setting up Valet..."
