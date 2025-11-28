@@ -34,14 +34,6 @@ check_prerequisites() {
     fi
 }
 
-prevent_sleep() {
-    if command -v caffeinate >/dev/null 2>&1; then
-        caffeinate -dims &
-        CAFFEINATE_PID=$!
-        trap 'kill "$CAFFEINATE_PID" &>/dev/null 2>&1 || true' EXIT
-    fi
-}
-
 backup_file() {
     local file="$1"
     local backup_path="backup/$file"
@@ -56,7 +48,6 @@ backup_file() {
 # ==============================================================================
 
 cmd_install() {
-    prevent_sleep
     check_prerequisites
     
     if [[ ! -d "$TEMPLATES_DIR" ]]; then
