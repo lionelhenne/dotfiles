@@ -20,6 +20,12 @@ source "$SCRIPT_DIR/_common.sh"
 # ==============================================================================
 
 readonly TEMPLATES_DIR="$HOME/Developer/laravel-templates/templates"
+readonly DEPENDENCIES_DIR="$HOME/Developer/laravel-templates"
+
+# Global flags
+INSTALL_CSP=false
+INSTALL_COCKPIT=false
+BACKUP_EXISTS=false
 
 # ==============================================================================
 # HELPERS
@@ -32,14 +38,223 @@ check_prerequisites() {
     if [[ ! -f ".env" ]]; then 
         log_error ".env not found"
     fi
+    if [[ ! -d "$TEMPLATES_DIR" ]]; then
+        log_error "Templates directory not found: $TEMPLATES_DIR"
+    fi
 }
 
 backup_file() {
     local file="$1"
     local backup_path="backup/$file"
+    
     mkdir -p "$(dirname "$backup_path")"
+    
+    if [[ -f "$backup_path" ]]; then
+        return 1  # Backup exists
+    fi
+    
     if [[ -f "$file" ]]; then 
         cp "$file" "$backup_path"
+        return 0  # Backup created
+    fi
+    
+    return 2  # Source file doesn't exist
+}
+
+# ==============================================================================
+# INSTALLATION STEPS
+# ==============================================================================
+
+step_ask_packages() {
+    log_header "Package Selection"
+
+    if confirm "Install Spatie CSP?" Y; then
+        INSTALL_CSP=true
+    fi
+
+    if confirm "Install Cockpit CMS?" Y; then
+        INSTALL_COCKPIT=true
+    fi
+}
+
+step_backup_files() {
+    log_header "Backups"
+
+    local files=(
+        "resources/css/app.css"
+        "resources/js/app.js"
+        "resources/views/welcome.blade.php"
+    )
+    
+    if [[ "$INSTALL_CSP" == true ]]; then
+        files+=("config/csp.php")
+    fi
+    
+    for file in "${files[@]}"; do
+        if backup_file "$file"; then
+            log_info "Backed up: $file"
+        else
+            log_warn "Backup exists: $file"
+            BACKUP_EXISTS=true
+        fi
+    done
+    
+    # Confirmation si backup existe déjà
+    if [[ "$BACKUP_EXISTS" == true ]]; then
+        echo
+        log_warn "Backups already exist! This suggests the script was already run."
+        log_warn "Continuing will OVERWRITE your current files with the templates."
+        echo
+        if ! confirm "Are you SURE you want to overwrite?" N; then
+            log_info "Installation cancelled"
+            exit 0
+        fi
+        echo
+    fi
+}
+
+step_install_composer_packages() {
+    log_header "Composer Packages"
+    
+    if [[ "$INSTALL_CSP" == true ]]; then
+        if composer show spatie/laravel-csp >/dev/null 2>&1; then
+            log_warn "Spatie CSP already installed; skipped"
+        else
+            log_info "Installing Spatie CSP..."
+            if composer require spatie/laravel-csp --no-interaction >/dev/null 2>&1; then
+                php artisan vendor:publish --tag=csp-config >/dev/null 2>&1
+                log_success "Spatie CSP installed"
+            else
+                log_error "Failed to install Spatie CSP"
+            fi
+        fi
+    fi
+    
+    if [[ "$INSTALL_COCKPIT" == true ]]; then
+        if composer show lionelhenne/laravel-cockpit-cms >/dev/null 2>&1; then
+            log_warn "Cockpit CMS already installed; skipped"
+        else
+            log_info "Installing Cockpit CMS..."
+            if composer require lionelhenne/laravel-cockpit-cms --no-interaction >/dev/null 2>&1; then
+                php artisan vendor:publish --tag="cockpit-config" >/dev/null 2>&1
+                log_success "Cockpit CMS installed"
+            else
+                log_error "Failed to install Cockpit CMS"
+            fi
+        fi
+    fi
+}
+
+step_update_env() {
+    log_header ".env Configuration"
+    
+    if grep -q "# LARAVEL-TOOL-CONFIGURED" ".env"; then
+        log_warn ".env already configured; skipped"
+        return
+    fi
+    
+    log_info "Updating .env file..."
+    
+    # Marquer comme configuré
+    echo "# LARAVEL-TOOL-CONFIGURED" >> ".env"
+    
+    # Modifications de base
+    sed -i '' 's|^APP_URL=http://|APP_URL=https://|g' ".env"
+    sed -i '' 's|^APP_LOCALE=en$|APP_LOCALE=fr|g' ".env"
+    
+    # Variables CSP
+    if [[ "$INSTALL_CSP" == true ]] && ! grep -q "^CSP_REPORT_URI=" ".env"; then
+        cat >> ".env" << 'EOF'
+
+CSP_REPORT_URI=
+CSP_ENABLED=false
+CSP_ENABLED_WHILE_HOT_RELOADING=false
+CSP_NONCE_ENABLED=false
+EOF
+        log_success "CSP variables added"
+    fi
+    
+    # Variables Cockpit
+    if [[ "$INSTALL_COCKPIT" == true ]] && ! grep -q "^COCKPIT_GRAPHQL_ENDPOINT=" ".env"; then
+        cat >> ".env" << 'EOF'
+
+COCKPIT_URL=
+COCKPIT_GRAPHQL_ENDPOINT=
+COCKPIT_API_TOKEN=
+EOF
+        log_success "Cockpit variables added"
+    fi
+    
+    log_success ".env updated"
+}
+
+step_copy_template_files() {
+    log_header "Template Files"
+    
+    # CSS directory
+    log_info "Copying CSS directory..."
+    if [[ ! -d "$TEMPLATES_DIR/resources/css" ]]; then
+        log_error "CSS directory not found: $TEMPLATES_DIR/resources/css"
+    fi
+    mkdir -p "resources/css"
+    if cp -r "$TEMPLATES_DIR/resources/css/"* "resources/css/"; then
+        log_success "CSS directory copied"
+    else
+        log_error "Failed to copy CSS directory"
+    fi
+    
+    # JS directory
+    log_info "Copying JS directory..."
+    if [[ ! -d "$TEMPLATES_DIR/resources/js" ]]; then
+        log_error "JS directory not found: $TEMPLATES_DIR/resources/js"
+    fi
+    mkdir -p "resources/js"
+    if cp -r "$TEMPLATES_DIR/resources/js/"* "resources/js/"; then
+        log_success "JS directory copied"
+    else
+        log_error "Failed to copy JS directory"
+    fi
+    
+    # Views
+    if [[ -f "$TEMPLATES_DIR/resources/views/welcome.blade.php" ]]; then
+        log_info "Copying views..."
+        mkdir -p "resources/views"
+        cp "$TEMPLATES_DIR/resources/views/welcome.blade.php" "resources/views/"
+        log_success "Views copied"
+    fi
+    
+    # CSP config
+    if [[ "$INSTALL_CSP" == true ]]; then
+        if [[ ! -f "$TEMPLATES_DIR/config/csp.php" ]]; then
+            log_error "CSP config not found: $TEMPLATES_DIR/config/csp.php"
+        fi
+        log_info "Copying CSP config..."
+        mkdir -p "config"
+        if cp "$TEMPLATES_DIR/config/csp.php" "config/csp.php"; then
+            log_success "CSP config copied"
+        else
+            log_error "Failed to copy CSP config"
+        fi
+    fi
+    
+    # Editor configs
+    log_info "Copying editor configs..."
+    cp "$TEMPLATES_DIR/.editorconfig" .
+    cp "$TEMPLATES_DIR/.prettierrc" .
+    log_success "Editor configs copied"
+}
+
+step_install_npm_packages() {
+    if [[ ! -f "$DEPENDENCIES_DIR/install-dependencies.sh" ]]; then
+        log_warn "No dependency installation script found"
+        return
+    fi
+    
+    log_header "npm Packages"
+    if bash "$DEPENDENCIES_DIR/install-dependencies.sh"; then
+        log_success "Template dependencies installed"
+    else
+        log_error "Failed to install template dependencies"
     fi
 }
 
@@ -50,122 +265,15 @@ backup_file() {
 cmd_install() {
     check_prerequisites
     
-    if [[ ! -d "$TEMPLATES_DIR" ]]; then
-        log_error "Templates directory not found: $TEMPLATES_DIR"
-    fi
-
     log_header "Laravel Setup"
-
-    # Packages selection
-    if confirm "Install Spatie CSP?" Y; then
-        INSTALL_CSP=true
-    else
-        INSTALL_CSP=false
-    fi
-
-    if confirm "Install Cockpit CMS?" Y; then
-        INSTALL_COCKPIT=true
-    else
-        INSTALL_COCKPIT=false
-    fi
-
-    # Backup files
-    log_header "Backups"
     
-    local files=(".env" "resources/css/app.css" "resources/js/app.js")
-    if [[ "$INSTALL_CSP" == true ]]; then 
-        files+=("config/csp.php")
-    fi
+    step_ask_packages
+    step_backup_files
+    step_install_composer_packages
+    step_update_env
+    step_copy_template_files
+    step_install_npm_packages
     
-    for file in "${files[@]}"; do 
-        backup_file "$file"
-        log_info "Backed up: $file"
-    done
-
-    # Install Composer packages
-    log_header "Composer Packages"
-    
-    if [[ "$INSTALL_CSP" == true ]]; then
-        log_info "Installing Spatie CSP..."
-        if composer require spatie/laravel-csp --no-interaction >/dev/null 2>&1; then
-            php artisan vendor:publish --tag=csp-config >/dev/null 2>&1
-            log_success "Spatie CSP installed"
-        else
-            log_error "Failed to install Spatie CSP"
-        fi
-    fi
-    
-    if [[ "$INSTALL_COCKPIT" == true ]]; then
-        log_info "Installing Cockpit CMS..."
-        if composer require lionelhenne/laravel-cockpit-cms --no-interaction >/dev/null 2>&1; then
-            php artisan vendor:publish --tag="cockpit-config" >/dev/null 2>&1
-            log_success "Cockpit CMS installed"
-        else
-            log_error "Failed to install Cockpit CMS"
-        fi
-    fi
-
-    # Update .env file
-    log_info "Updating .env file..."
-    sed -i '' 's|^APP_URL=http://|APP_URL=https://|g' ".env"
-    sed -i '' 's|^APP_LOCALE=en$|APP_LOCALE=fr|g' ".env"
-    
-    if [[ "$INSTALL_CSP" == true ]] && ! grep -q "^CSP_REPORT_URI=" ".env"; then
-        cat >> ".env" << 'EOF'
-
-CSP_REPORT_URI=
-CSP_ENABLED=false
-CSP_ENABLED_WHILE_HOT_RELOADING=false
-CSP_NONCE_ENABLED=false
-EOF
-        log_success "CSP variables added to .env"
-    fi
-
-    if [[ "$INSTALL_COCKPIT" == true ]] && ! grep -q "^COCKPIT_GRAPHQL_ENDPOINT=" ".env"; then
-        cat >> ".env" << 'EOF'
-
-COCKPIT_URL=
-COCKPIT_GRAPHQL_ENDPOINT=
-COCKPIT_API_TOKEN=
-EOF
-        log_success "Cockpit variables added to .env"
-    fi
-    
-    log_success ".env updated"
-
-    # Copy template files
-    log_header "Template Files"
-    
-    local templates=("resources/css/app.css" "resources/css/_base.css" "resources/js/app.js")
-    if [[ "$INSTALL_CSP" == true ]]; then 
-        templates+=("config/csp.php")
-    fi
-    
-    for template in "${templates[@]}"; do
-        local source="${TEMPLATES_DIR}/${template}"
-        local dest="${template}"
-        
-        log_info "Copying ${template}..."
-        
-        if [[ ! -f "$source" ]]; then
-            log_error "Template not found: ${source}"
-        fi
-        
-        mkdir -p "$(dirname "$dest")"
-        
-        if cp "$source" "$dest"; then
-            log_success "Copied: ${template}"
-        else
-            log_error "Failed to copy: ${template}"
-        fi
-    done
-
-    # Copy editor configs
-    log_info "Adding editor configs..."
-    cp "$TEMPLATES_DIR/.editorconfig" .
-    cp "$TEMPLATES_DIR/.prettierrc" .
-    log_success "Editor configs added"
-
     echo
     log_success "Installation completed!"
     echo
