@@ -6,6 +6,14 @@ if command -v starship &> /dev/null; then
 fi
 
 # ------------------------------------------------------------
+# Case-insensitive autocompletion
+# ------------------------------------------------------------
+autoload -U compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z} m:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu select
+compinit
+
+# ------------------------------------------------------------
 # zsh
 # ------------------------------------------------------------
 [[ -f "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
@@ -25,13 +33,6 @@ fi
 # node (warnings)
 # ------------------------------------------------------------
 # export NODE_OPTIONS="--no-warnings --experimental-modules"
-
-# ------------------------------------------------------------
-# Case-insensitive autocompletion
-# ------------------------------------------------------------
-autoload -U compinit
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z} m:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-compinit
 
 # ------------------------------------------------------------
 # Aliases
