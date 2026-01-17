@@ -1,4 +1,10 @@
 # ------------------------------------------------------------
+# Environment Variables
+# ------------------------------------------------------------
+export VISUAL="code --wait"
+export EDITOR="code --wait"
+
+# ------------------------------------------------------------
 # Starship
 # ------------------------------------------------------------
 if command -v starship &> /dev/null; then
@@ -14,10 +20,22 @@ zstyle ':completion:*' menu select
 compinit
 
 # ------------------------------------------------------------
-# zsh
+# zsh: zsh-autosuggestions.zsh
 # ------------------------------------------------------------
 [[ -f "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+# ------------------------------------------------------------
+# zsh: zsh-syntax-highlighting
+# ------------------------------------------------------------
 [[ -f "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# ------------------------------------------------------------
+# zsh: edit-command-line
+# ------------------------------------------------------------
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey '^x^e' edit-command-line
+zstyle :zle:edit-command-line editor micro
 
 # ------------------------------------------------------------
 # Atuin
