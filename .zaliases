@@ -3,35 +3,6 @@
 # ------------------------------------------------------------
 alias home="clear;cd"
 alias flushcache="sudo killall -HUP mDNSResponder"
-alias update='composer global outdated && brew update && brew outdated --formula && npm outdated -g'
-alias upgrade='brew upgrade --formula && composer global update && npm update -g && brew cleanup'
-alias list='
-	GREEN="\033[1;32m"; RESET="\033[0m"; \
-	echo "" && \
-	echo -e "${GREEN}Composer global${RESET}" && \
-	echo -e "${GREEN}---------------${RESET}" && \
-	composer global show --direct | sort && \
-	echo "" && \
-	echo -e "${GREEN}Homebrew Leaves${RESET}" && \
-	echo -e "${GREEN}---------------${RESET}" && \
-	brew leaves | sort | pr -4 -t -w $COLUMNS && \
-	echo "" && \
-	echo -e "${GREEN}Homebrew Dependencies${RESET}" && \
-	echo -e "${GREEN}---------------------${RESET}" && \
-	comm -13 <(brew leaves | sort) <(brew list --formula | sort) | pr -4 -t -w $COLUMNS && \
-	echo "" && \
-	echo -e "${GREEN}Homebrew Casks${RESET}" && \
-	echo -e "${GREEN}--------------${RESET}" && \
-	brew list --cask | grep -v "^font-" | sort | pr -4 -t -w $COLUMNS && \
-	echo "" && \
-	echo -e "${GREEN}Homebrew Fonts${RESET}" && \
-	echo -e "${GREEN}--------------${RESET}" && \
-	brew list --cask | grep "^font-" | pr -4 -t -w $COLUMNS && \
-	echo "" && \
-	echo -e "${GREEN}npm global${RESET}" && \
-	echo -e "${GREEN}----------${RESET}" && \
-	npm list -g --depth=0 --parseable | sed "1d" | xargs -n1 basename | sort | pr -4 -t -w $COLUMNS
-'
 
 # ------------------------------------------------------------
 # micro
@@ -55,10 +26,9 @@ alias lta="eza $ezaargs --recurse --tree --level=2"
 alias f="fd -Hia --exclude .git --exclude node_modules"
 
 # ------------------------------------------------------------
-# Laravel 
+# Laravel
 # ------------------------------------------------------------
 alias pa="[[ -s ./artisan ]] && php artisan"
-alias @setup="setup-tool"
 alias @backup="backup-tool"
 alias @laravel="laravel-tool"
 alias @cockpit="cockpit-tool"

@@ -1,0 +1,56 @@
+# ------------------------------------------------------------
+# Common library
+# ------------------------------------------------------------
+[[ -f "$HOME/.local/lib/_common.sh" ]] && source "$HOME/.local/lib/_common.sh"
+
+# ------------------------------------------------------------
+# Package management
+# ------------------------------------------------------------
+update() {
+    log_header "Checking for updates"
+    log_info "Composer global"
+    composer global outdated
+    echo
+    log_info "Homebrew"
+    brew update --quiet && brew outdated --formula
+    echo
+    log_info "npm global"
+    npm outdated -g
+}
+
+upgrade() {
+    log_header "Upgrading packages"
+    log_info "Homebrew formulas"
+    brew upgrade --formula
+    echo
+    log_info "Composer global"
+    composer global update
+    echo
+    log_info "npm global"
+    npm update -g
+    echo
+    log_info "Homebrew cleanup"
+    brew cleanup
+    echo
+    log_success "All packages upgraded"
+}
+
+list() {
+    log_header "Composer global"
+    composer global show --direct | sort
+
+    log_header "Homebrew Leaves"
+    brew leaves | sort | pr -4 -t -w $COLUMNS
+
+    log_header "Homebrew Dependencies"
+    comm -13 <(brew leaves | sort) <(brew list --formula | sort) | pr -4 -t -w $COLUMNS
+
+    log_header "Homebrew Casks"
+    brew list --cask | grep -v "^font-" | sort | pr -4 -t -w $COLUMNS
+
+    log_header "Homebrew Fonts"
+    brew list --cask | grep "^font-" | pr -4 -t -w $COLUMNS
+
+    log_header "npm global"
+    npm list -g --depth=0 --parseable | sed "1d" | xargs -n1 basename | sort | pr -4 -t -w $COLUMNS
+}
