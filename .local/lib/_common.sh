@@ -5,18 +5,18 @@
 # ==============================================================================
 
 if [[ -z "${MAGENTA:-}" ]]; then
-    readonly WHITE=$'\033[38;5;255m'    # Primary text
-    readonly CYAN=$'\033[38;5;51m'      # Headers
-    readonly BLUE=$'\033[38;5;33m'      # INFO
-    readonly GREEN=$'\033[38;5;42m'     # DONE
-    readonly YELLOW=$'\033[38;5;214m'   # WARN
-    readonly LIGHTRED=$'\033[38;5;203m' # WARN text
-    readonly RED=$'\033[38;5;196m'      # FAIL
-    readonly MAGENTA=$'\033[38;5;212m'  # CONF
-    readonly SILVER=$'\033[38;5;250m'   # Secondary text
-    readonly GRAY=$'\033[38;5;240m'     # Dimmed text
-    readonly BOLD=$'\033[1m'            # Bold
-    readonly RESET=$'\033[0m'           # Reset
+    readonly WHITE=$'\033[38;2;232;237;255m'  # Primary text    — #E8EDFF  (Text  Macchiato +bright)
+    readonly CYAN=$'\033[38;2;0;229;255m'     # Headers         — #00E5FF
+    readonly BLUE=$'\033[38;2;68;136;255m'    # INFO            — #4488FF  (Blue  Macchiato +sat)
+    readonly GREEN=$'\033[38;2;0;230;118m'    # DONE            — #00E676  (Green Macchiato +sat)
+    readonly YELLOW=$'\033[38;2;255;196;0m'   # WARN            — #FFC400
+    readonly ORANGE=$'\033[38;2;255;140;90m' # WARN text      — #FF8C5A  (Peach Macchiato +sat)
+    readonly RED=$'\033[38;2;255;51;85m'      # FAIL            — #FF3355  (Red   Macchiato +sat)
+    readonly MAGENTA=$'\033[38;2;255;82;194m' # CONF            — #FF52C2
+    readonly SILVER=$'\033[38;2;160;170;204m' # Secondary text  — #A0AACC  (Subtext1 Macchiato)
+    readonly GRAY=$'\033[38;2;106;115;148m'   # Dimmed text     — #6A7394  (Overlay2 Macchiato)
+    readonly BOLD=$'\033[1m'                  # Bold
+    readonly RESET=$'\033[0m'                 # Reset
 fi
 
 # ==============================================================================
@@ -25,24 +25,24 @@ fi
 
 log_header() {
     echo
-    echo -e "${CYAN}=== $1 ===${RESET}"
+    echo -e "${CYAN}${BOLD}▶︎ $1${RESET}"
     echo
 }
 
 log_info() {
-    echo -e "${BLUE}${BOLD}INFO${RESET}  ${SILVER}$*${RESET}"
+    echo -e "${BLUE}${BOLD}● INFO${RESET}  \033[38;2;190;213;255m$*${RESET}"
 }
 
 log_success() {
-    echo -e "${GREEN}${BOLD}DONE${RESET}  ${SILVER}$*${RESET}"
+    echo -e "${GREEN}${BOLD}● DONE${RESET}  \033[38;2;166;246;207m$*${RESET}"
 }
 
 log_warn() {
-    echo -e "${YELLOW}${BOLD}WARN${RESET}  ${SILVER}$*${RESET}"
+    echo -e "${YELLOW}${BOLD}● WARN${RESET}  \033[38;2;255;234;166m$*${RESET}"
 }
 
 log_error() {
-    echo -e "${RED}${BOLD}FAIL${RESET}  ${LIGHTRED}$*${RESET}"
+    echo -e "${RED}${BOLD}● FAIL${RESET}  \033[38;2;255;184;196m$*${RESET}"
     exit 1
 }
 

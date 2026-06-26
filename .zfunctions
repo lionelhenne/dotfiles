@@ -7,50 +7,50 @@
 # Package management
 # ------------------------------------------------------------
 update() {
-    log_header "Checking for updates"
-    log_info "Composer global"
+    log_header "CHECKING FOR UPDATES"
+    log_info "COMPOSER GLOBAL"
     composer global outdated
     echo
-    log_info "Homebrew"
+    log_info "HOMEBREW"
     brew update --quiet && brew outdated --formula
     echo
-    log_info "npm global"
+    log_info "NPM GLOBAL"
     npm outdated -g
 }
 
 upgrade() {
-    log_header "Upgrading packages"
-    log_info "Homebrew formulas"
+    log_header "UPGRADING PACKAGES"
+    log_info "HOMEBREW FORMULAS"
     brew upgrade --formula
     echo
-    log_info "Composer global"
+    log_info "COMPOSER GLOBAL"
     composer global update
     echo
-    log_info "npm global"
+    log_info "NPM GLOBAL"
     npm update -g
     echo
-    log_info "Homebrew cleanup"
+    log_info "HOMEBREW CLEANUP"
     brew cleanup
     echo
-    log_success "All packages upgraded"
+    log_success "ALL PACKAGES UPGRADED"
 }
 
 list() {
-    log_header "Composer global"
+    log_header "COMPOSER GLOBAL"
     composer global show --direct | sort
 
-    log_header "Homebrew Leaves"
+    log_header "HOMEBREW LEAVES"
     brew leaves | sort | pr -4 -t -w $COLUMNS
 
-    log_header "Homebrew Dependencies"
+    log_header "HOMEBREW DEPENDENCIES"
     comm -13 <(brew leaves | sort) <(brew list --formula | sort) | pr -4 -t -w $COLUMNS
 
-    log_header "Homebrew Casks"
+    log_header "HOMEBREW CASKS"
     brew list --cask | grep -v "^font-" | sort | pr -4 -t -w $COLUMNS
 
-    log_header "Homebrew Fonts"
+    log_header "HOMEBREW FONTS"
     brew list --cask | grep "^font-" | pr -4 -t -w $COLUMNS
 
-    log_header "npm global"
+    log_header "NPM GLOBAL"
     npm list -g --depth=0 --parseable | sed "1d" | xargs -n1 basename | sort | pr -4 -t -w $COLUMNS
 }
