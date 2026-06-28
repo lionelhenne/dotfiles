@@ -2,7 +2,7 @@
 # Environment Variables
 # ------------------------------------------------------------
 export VISUAL="code --wait"
-export EDITOR="code --wait"
+export EDITOR="micro"
 
 # ------------------------------------------------------------
 # Starship
@@ -35,7 +35,7 @@ compinit
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^x^e' edit-command-line
-zstyle :zle:edit-command-line editor micro
+zstyle ':zle:edit-command-line' editor "$EDITOR"
 
 # ------------------------------------------------------------
 # Atuin
