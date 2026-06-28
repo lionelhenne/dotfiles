@@ -7,29 +7,27 @@
 # Package management
 # ------------------------------------------------------------
 update() {
-    log_header "CHECKING FOR UPDATES"
-    log_info "COMPOSER GLOBAL"
+    log_header "COMPOSER GLOBAL"
     composer global outdated
     echo
-    log_info "HOMEBREW"
+    log_header "HOMEBREW"
     brew update --quiet && brew outdated --formula
     echo
-    log_info "NPM GLOBAL"
+    log_header "NPM GLOBAL"
     npm outdated -g
 }
 
 upgrade() {
-    log_header "UPGRADING PACKAGES"
-    log_info "HOMEBREW FORMULAS"
+    log_header "HOMEBREW FORMULAS"
     brew upgrade --formula
     echo
-    log_info "COMPOSER GLOBAL"
+    log_header "COMPOSER GLOBAL"
     composer global update
     echo
-    log_info "NPM GLOBAL"
+    log_header "NPM GLOBAL"
     npm update -g
     echo
-    log_info "HOMEBREW CLEANUP"
+    log_header "HOMEBREW CLEANUP"
     brew cleanup
     echo
     log_success "ALL PACKAGES UPGRADED"
