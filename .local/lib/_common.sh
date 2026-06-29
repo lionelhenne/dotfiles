@@ -15,6 +15,11 @@ if [[ -z "${MAGENTA:-}" ]]; then
     readonly MAGENTA=$'\033[38;2;255;82;194m' # CONF            — #FF52C2
     readonly SILVER=$'\033[38;2;160;170;204m' # Secondary text  — #A0AACC  (Subtext1 Macchiato)
     readonly GRAY=$'\033[38;2;106;115;148m'   # Dimmed text     — #6A7394  (Overlay2 Macchiato)
+    readonly BLUE_LIGHT=$'\033[38;2;190;213;255m'   # INFO text        — lightened BLUE
+    readonly GREEN_LIGHT=$'\033[38;2;166;246;207m'  # DONE text        — lightened GREEN
+    readonly YELLOW_LIGHT=$'\033[38;2;255;234;166m' # WARN text        — lightened YELLOW
+    readonly RED_LIGHT=$'\033[38;2;255;184;196m'    # FAIL text        — lightened RED
+    readonly MAGENTA_LIGHT=$'${MAGENTA_LIGHT}' # USER text       — lightened MAGENTA
     readonly BOLD=$'\033[1m'                  # Bold
     readonly RESET=$'\033[0m'                 # Reset
 fi
@@ -30,19 +35,19 @@ log_header() {
 }
 
 log_info() {
-    echo -e "${BLUE}${BOLD}● INFO${RESET}  \033[38;2;190;213;255m$*${RESET}"
+    echo -e "${BLUE}${BOLD}● INFO${RESET}  ${BLUE_LIGHT}$*${RESET}"
 }
 
 log_success() {
-    echo -e "${GREEN}${BOLD}● DONE${RESET}  \033[38;2;166;246;207m$*${RESET}"
+    echo -e "${GREEN}${BOLD}● DONE${RESET}  ${GREEN_LIGHT}$*${RESET}"
 }
 
 log_warn() {
-    echo -e "${YELLOW}${BOLD}● WARN${RESET}  \033[38;2;255;234;166m$*${RESET}"
+    echo -e "${YELLOW}${BOLD}● WARN${RESET}  ${YELLOW_LIGHT}$*${RESET}"
 }
 
 log_error() {
-    echo -e "${RED}${BOLD}● FAIL${RESET}  \033[38;2;255;184;196m$*${RESET}"
+    echo -e "${RED}${BOLD}● FAIL${RESET}  ${RED_LIGHT}$*${RESET}"
     return 1
 }
 
@@ -55,7 +60,7 @@ prompt() {
     local message="$1"
     local var_name="$2"
     
-    read -p "$(echo -e "${MAGENTA}${BOLD}USER${RESET}  ${WHITE}${message}${RESET} ")" response
+    read -p "$(echo -e "${MAGENTA}${BOLD}● USER${RESET}  ${MAGENTA_LIGHT}${message}${RESET} ")" response
     
     if [[ -n "$var_name" ]]; then
         eval "$var_name='$response'"
@@ -89,7 +94,7 @@ confirm() {
     esac
     
     while true; do
-        read -p "$(echo -e "${MAGENTA}${BOLD}USER${RESET}  ${SILVER}${prompt} ${prompt_suffix}:${RESET} ")" response
+        read -p "$(echo -e "${MAGENTA}${BOLD}● USER${RESET}  ${MAGENTA_LIGHT}${prompt} ${prompt_suffix}:${RESET} ")" response
         
         # Si vide et défaut défini, utiliser le défaut
         if [[ -z "$response" && -n "$default" ]]; then
