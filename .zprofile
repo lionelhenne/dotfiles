@@ -38,4 +38,4 @@ fi
 # ------------------------------------------------------------
 # Atuin
 # ------------------------------------------------------------
-[[ -d $HOME/.config/atuin ]] && export ATUIN_CONFIG_DIR="$HOME/.dotfiles/.config/atuin"
+[[ -d $HOME/.config/atuin ]] && export ATUIN_CONFIG_DIR="$HOME/.config/atuin"
