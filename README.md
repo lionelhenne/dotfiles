@@ -15,10 +15,7 @@ Bootstrap via: [macOS Setup](https://github.com/lionelhenne/macossetup)
 
 ## Available Tools
 
-- **setup-tool** (usage: `@setup`) – Post-installation modules (identity, webdev, casks, fonts)
-- **laravel-tool** (usage: `@laravel`) – Laravel project setup and cache management 
-- **cockpit-tool** (usage: `@cockpit`) – Cockpit CMS installation and updates 
-- **backup-tool** (usage: `@backup`) – Application configuration backup/restore 
+- **backup-tool** (usage: `@backup`) – Application configuration backup/restore
 
 ## License
 
