@@ -3,6 +3,7 @@
 # ------------------------------------------------------------
 export VISUAL="code --wait"
 export EDITOR="micro"
+export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
 
 # ------------------------------------------------------------
 # Starship
