@@ -11,7 +11,7 @@ update() {
     composer global outdated
     echo
     log_header "HOMEBREW"
-    brew update --quiet && brew outdated --formula && brew outdated --cask
+    brew update --quiet && brew outdated --formula && brew outdated --cask --greedy-auto-updates
     echo
     log_header "NPM GLOBAL"
     npm outdated -g
@@ -22,7 +22,7 @@ upgrade() {
     brew upgrade --formula
     echo
     log_header "HOMEBREW CASKS"
-    brew upgrade --cask
+    brew upgrade --cask --greedy-auto-updates
     echo
     log_header "COMPOSER GLOBAL"
     composer global update
