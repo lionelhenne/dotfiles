@@ -26,26 +26,10 @@ readonly DEFAULT_BACKUP_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/
 # ==============================================================================
 
 get_working_directory() {
-    local found=0
-    
-    # Check current directory for any config folders
-    for dir in */; do
-        if [[ -f "${dir}config.txt" ]]; then
-            found=1
-            break
-        fi
-    done
-    
-    if [[ $found -eq 0 ]]; then
-        if [[ -d "$DEFAULT_BACKUP_DIR" ]]; then
-            log_warn "No apps found in current directory" >&2
-            log_info "Switching to: ${DEFAULT_BACKUP_DIR}" >&2
-            echo "$DEFAULT_BACKUP_DIR"
-        else
-            log_error "No apps found and default directory does not exist"
-        fi
+    if [[ -d "$DEFAULT_BACKUP_DIR" ]]; then
+        echo "$DEFAULT_BACKUP_DIR"
     else
-        echo "$(pwd)"
+        log_error "Default directory does not exist: ${DEFAULT_BACKUP_DIR}"
     fi
 }
 
@@ -238,7 +222,7 @@ display_help() {
     echo -e "  @backup -r <app>   ${SILVER}Restore specific application${RESET}"
     echo -e "  @backup -l         ${SILVER}List available applications${RESET}"
     echo
-    log_info "Searches in current directory first, then falls back to: ${DEFAULT_BACKUP_DIR}"
+    log_info "Always uses: ${DEFAULT_BACKUP_DIR}"
     exit 0
 }
 
