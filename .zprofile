@@ -27,7 +27,6 @@ fi
 # ------------------------------------------------------------
 # Starship
 # ------------------------------------------------------------
-# [[ "$TERM_PROGRAM" == "ghostty" || "$TERM_PROGRAM" == "vscode" ]] && export STARSHIP_CONFIG="$HOME/.config/starship/config.toml"
 export STARSHIP_CONFIG="$HOME/.config/starship/config.toml"
 
 # ------------------------------------------------------------
