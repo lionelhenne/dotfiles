@@ -4,6 +4,8 @@
 export VISUAL="code --wait"
 export EDITOR="micro"
 export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
+# gh: skip the terminal background-color query (otherwise its reply lands in the prompt, e.g. after "gh run watch")
+export GLAMOUR_STYLE=dark
 
 # ------------------------------------------------------------
 # Starship
